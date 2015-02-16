@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<atomic:app xmlns:atomic="http://www.atomicplatform.com/Process">
+  <process>
+    <name>HelloWorld</name>
+    <elementType>Atomic.Core.AtomicProcess, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+    <startEvent>11404313</startEvent>
+    <stopEvent>52727599</stopEvent>
+  </process>
+  <conditions>
+    <condition id="17654054">
+      <name>condition17654054</name>
+      <elementType>Atomic.Core.TaskCondition, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <function>19699911</function>
+      <task>11404313</task>
+    </condition>
+    <condition id="14303791">
+      <name>condition14303791</name>
+      <elementType>Atomic.Core.TaskCondition, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <function>30880833</function>
+      <task>11404313</task>
+    </condition>
+    <condition id="51393439">
+      <name>condition51393439</name>
+      <elementType>Atomic.Core.TaskCondition, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <function>19699911</function>
+      <task>52727599</task>
+    </condition>
+  </conditions>
+  <tasks>
+    <task id="11404313">
+      <name>task11404313</name>
+      <elementType>Atomic.Core.AtomicTask, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <values>23264094</values>
+      <stopCondition>17654054</stopCondition>
+      <function>49584532</function>
+    </task>
+    <task id="52727599">
+      <name>task52727599</name>
+      <elementType>Atomic.Core.AtomicTask, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <startCondition>14303791</startCondition>
+      <stopCondition>51393439</stopCondition>
+      <function>2389992</function>
+    </task>
+  </tasks>
+  <values>
+    <value id="23264094">
+      <name>outputStream</name>
+      <elementType>Atomic.Core.AtomicValue, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</elementType>
+      <value>null</value>
+    </value>
+  </values>
+  <functions>
+    <function id="19699911">
+      <methodName>TaskRunCompleted</methodName>
+      <className>Atomic.Core.CoreFunctions, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</className>
+      <assemblyName>Atomic.Core</assemblyName>
+    </function>
+    <function id="49584532">
+      <methodName>DisplayHelloMessage</methodName>
+      <className>Atomic.Samples.HelloWorldFunctions, Atomic.Samples, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</className>
+      <assemblyName>Atomic.Samples</assemblyName>
+    </function>
+    <function id="30880833">
+      <methodName>TaskDone</methodName>
+      <className>Atomic.Core.CoreFunctions, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</className>
+      <assemblyName>Atomic.Core</assemblyName>
+    </function>
+    <function id="2389992">
+      <methodName>DefaultRunFunction</methodName>
+      <className>Atomic.Core.CoreFunctions, Atomic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</className>
+      <assemblyName>Atomic.Core</assemblyName>
+    </function>
+  </functions>
+</atomic:app>

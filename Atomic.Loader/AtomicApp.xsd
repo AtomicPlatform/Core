@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:atomic="http://www.atomicplatform.com/AtomicProcess"
+           targetNamespace="http://www.atomicplatform.com/AtomicProcess.xsd"
+           attributeFormDefault="unqualified"
+           elementFormDefault="unqualified">
+  <xs:complexType name="function">
+    <xs:sequence>
+      <xs:element name="methodName" type="xs:string" />
+      <xs:element name="className" type="xs:string" />
+      <xs:element name="assemblyName" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:unsignedInt" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="value">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="elementType" type="xs:string" />
+      <xs:element name="value" type="xs:string" />
+      <xs:element name="valueType" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:unsignedInt" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="condition">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="elementType" type="xs:string" />
+      <xs:element name="function" type="xs:unsignedInt" />
+      <xs:element name="task" minOccurs="0" maxOccurs="1" type="xs:unsignedInt" />
+      <xs:element name="value" minOccurs="0" maxOccurs="1" type="xs:unsignedInt" />
+      <xs:element name="conditions" minOccurs="0" maxOccurs="1" type="xs:string" />
+    </xs:sequence>
+
+    <xs:attribute name="id" type="xs:unsignedInt" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="task">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="elementType" type="xs:string" />
+      <xs:element name="values" type="xs:string" minOccurs="0" />
+      <xs:element name="startCondition" type="xs:unsignedInt" minOccurs="0" />
+      <xs:element name="stopCondition" type="xs:unsignedInt" minOccurs="0" />
+      <xs:element name="function" type="xs:unsignedInt" />
+      <xs:element name="tasks" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:unsignedInt" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="process">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="elementType" type="xs:string" />
+      <xs:element name="startEvent" type="xs:unsignedInt" />
+      <xs:element name="stopEvent" type="xs:unsignedInt" />
+      <xs:element name="events" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="app">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="process" type="atomic:process" />
+        <xs:element name="conditions">
+          <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="condition" type="atomic:condition" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="tasks">
+          <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="task" type="atomic:task" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="values">
+          <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="value" type="atomic:value" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="functions">
+          <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="function" type="atomic:function" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
