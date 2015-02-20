@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Atomic.Core/Atomic.Core.csproj">
+  <DisabledProjects>
+    <String>Atomic.UnitTests/Atomic.UnitTests.csproj</String>
+  </DisabledProjects>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Website/index.html">
+    <Files>
+      <File FileName="Website/index.html" Line="17" Column="17" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

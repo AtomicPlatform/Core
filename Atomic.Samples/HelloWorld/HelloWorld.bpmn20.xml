@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions id="definitions"
+  targetNamespace="http://activiti.org/bpmn20"
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+
+	<process id="hello_world" name="Hello World">
+		<startEvent id="_start" />
+		<endEvent id="_stop" />
+		<scriptTask id="display_greeting" name="Display Greeting" scriptFormat="JavaScript">
+			<script>
+				document.writeln('Hello World!');
+			</script>
+		</scriptTask>
+		<sequenceFlow id="startDone" sourceRef="_start" targetRef="display_greeting" />
+		<sequenceFlow id="taskDone" sourceRef="display_greeting" targetRef="_stop" />
+	</process>
+</definitions>

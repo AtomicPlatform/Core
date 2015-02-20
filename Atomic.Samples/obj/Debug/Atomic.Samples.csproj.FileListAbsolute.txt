@@ -1,0 +1,7 @@
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\bin\Debug\Atomic.Samples.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\bin\Debug\Atomic.Samples.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\bin\Debug\Atomic.Core.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\bin\Debug\Atomic.Core.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\obj\Debug\Atomic.Samples.csprojResolveAssemblyReference.cache
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\obj\Debug\Atomic.Samples.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Samples\obj\Debug\Atomic.Samples.pdb

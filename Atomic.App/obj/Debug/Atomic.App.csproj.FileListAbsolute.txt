@@ -1,1 +1,18 @@
+<<<<<<< Updated upstream
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Core\Atomic.App\bin\Debug\Atomic.App.exe.config
+=======
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.App.exe.config
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.App.exe
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.App.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Core.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Loader.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Samples.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Newtonsoft.Json.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Core.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Loader.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Atomic.Samples.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\bin\Debug\Newtonsoft.Json.xml
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\obj\Debug\Atomic.App.csprojResolveAssemblyReference.cache
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\obj\Debug\Atomic.App.exe
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.App\obj\Debug\Atomic.App.pdb
+>>>>>>> Stashed changes

@@ -1,0 +1,9 @@
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Atomic.Loader.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Atomic.Loader.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Atomic.Core.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Newtonsoft.Json.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Atomic.Core.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\bin\Debug\Newtonsoft.Json.xml
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\obj\Debug\Atomic.Loader.csprojResolveAssemblyReference.cache
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\obj\Debug\Atomic.Loader.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Loader\obj\Debug\Atomic.Loader.pdb

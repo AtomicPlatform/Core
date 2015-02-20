@@ -1,0 +1,5 @@
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\bin\Debug\Atomic.Core.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\bin\Debug\Atomic.Core.pdb
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.csprojResolveAssemblyReference.cache
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.dll
+D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.pdb
