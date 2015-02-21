@@ -3,3 +3,7 @@ D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\bin\Debug\Atomic.
 D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.csprojResolveAssemblyReference.cache
 D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.dll
 D:\Documents\Projects\LocalGit\AtomicPlatform\Core\Atomic.Core\obj\Debug\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.pdb

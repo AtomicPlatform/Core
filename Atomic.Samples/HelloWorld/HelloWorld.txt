@@ -1,11 +1,11 @@
 define process with name "Hello World"
   with stop event
-    set start condition to “Task Done”
-  add task with name “Display Greeting”
-    set start condition to “Start Done”
-    do print “Hello world!”
-  add condition with name “Start Done”
+    set start condition to "Task Done"
+  add task with name "Display Greeting"
+    set start condition to "Start Done"
+    do print "Hello world!"
+  add condition with name "Start Done"
     when start event is done
-  add condition with name “Task Done”
-    when task “Display Greeting” is done
+  add condition with name "Task Done"
+    when task "Display Greeting" is done
 end

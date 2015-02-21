@@ -37,8 +37,13 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
     <Content Include="Countdown\Countdown.txt" />
     <Content Include="Countdown\Countdown.xml" />
+    <Content Include="HelloWorld\HelloWorld.bpmn20.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="HelloWorld\HelloWorld.txt" />
-    <Content Include="HelloWorld\HelloWorld.xml" />
+    <Content Include="HelloWorld\HelloWorld.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Countdown\Countdown.cs" />
@@ -53,6 +58,10 @@
       <Name>Atomic.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="HelloWorld\HelloWorld.json" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
