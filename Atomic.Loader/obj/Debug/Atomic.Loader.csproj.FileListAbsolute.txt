@@ -16,3 +16,12 @@ C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Atomic.Cor
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Newtonsoft.Json.xml
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\obj\Debug\Atomic.Loader.dll
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\obj\Debug\Atomic.Loader.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Atomic.Loader.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Atomic.Loader.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Atomic.Core.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Newtonsoft.Json.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\bin\Debug\Newtonsoft.Json.xml
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\obj\Debug\Atomic.Loader.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\obj\Debug\Atomic.Loader.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Loader\obj\Debug\Atomic.Loader.csprojResolveAssemblyReference.cache

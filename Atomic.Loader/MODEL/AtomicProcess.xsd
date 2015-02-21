@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:atomic="http://www.atomicplatform.com/Process"
+           attributeFormDefault="unqualified" elementFormDefault="unqualified"
+           targetNamespace="http://www.atomicplatform.com/Process"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import />
+  <xs:element name="process">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:events" />
+        <xs:element ref="atomic:tasks" />
+        <xs:element ref="atomic:conditions" />
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:string" use="required" />
+      <xs:attribute name="name" type="xs:string" use="optional" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="idType">
+    <xs:attribute name="id" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="element" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="atomic:idType">
+        <xs:attribute name="name" type="xs:string" use="optional" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eventType">
+    <xs:complexContent>
+      <xs:extension base="atomic:element">
+        <xs:sequence>
+          <xs:element name="startOnCondition" type="atomic:idType" minOccurs="0" />
+          <xs:element name="stopOnCondition" type="atomic:idType" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="taskType">
+    <xs:complexContent>
+      <xs:extension base="atomic:eventType">
+        <xs:sequence>
+          <xs:element name="runScript" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="conditionType" abstract="true">
+    <xs:complexContent>
+      <xs:extension base="atomic:element">
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="taskCondition">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="atomic:conditionType">
+          <xs:sequence>
+            <xs:element name="task" type="atomic:idType" minOccurs="1" maxOccurs="1" />
+            <xs:element name="state" minOccurs="1" maxOccurs="1">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="Done" />
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="event">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="atomic:eventType" />
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="task">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="atomic:taskType" />
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="tasks">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:task" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="events">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:event" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="conditions">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:taskCondition" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

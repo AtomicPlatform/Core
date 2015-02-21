@@ -55,6 +55,11 @@ namespace Atomic.Loader
 
     public struct ConditionModel
     {
+        public enum TaskState
+        {
+            Done
+        }
+
         public string ID;
 
         public string Name;

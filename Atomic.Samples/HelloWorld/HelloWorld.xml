@@ -1,25 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<atomic:app xmlns:atomic="http://www.atomicplatform.com/Process">
-  <process id="hello_world" name="Hello World" />
-  <events>
-    <event id="_stop">
+<atomic:process xmlns:atomic="http://www.atomicplatform.com/Process"
+                id="hello_world" name="Hello World">
+  <atomic:events>
+    <atomic:event id="_stop">
       <startOnCondition id="taskDone" />
-    </event>
-  </events>
-  <tasks>
-    <task id="display_greeting" name="Display Greeting">
+    </atomic:event>
+  </atomic:events>
+  <atomic:tasks>
+    <atomic:task id="display_greeting" name="Display Greeting">
       <startOnCondition id="startDone" />
       <runScript>print "Hello world!"</runScript>
-    </task>
-  </tasks>
-  <conditions>
-    <taskCondition id="startDone" name="Start Done">
+    </atomic:task>
+  </atomic:tasks>
+  <atomic:conditions>
+    <atomic:taskCondition id="startDone" name="Start Done">
       <task id="_start" />
       <state>Done</state>
-    </taskCondition>
-    <taskCondition id="taskDone" name="Task Done">
+    </atomic:taskCondition>
+    <atomic:taskCondition id="taskDone" name="Task Done">
       <task id="display_greeting" />
       <state>Done</state>
-    </taskCondition>
-  </conditions>
-</atomic:app>
+    </atomic:taskCondition>
+  </atomic:conditions>
+</atomic:process>

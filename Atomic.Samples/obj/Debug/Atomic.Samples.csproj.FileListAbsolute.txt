@@ -12,3 +12,10 @@ C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Samples\bin\Debug\Atomic.Co
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.dll
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.pdb
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.csprojResolveAssemblyReference.cache
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\bin\Debug\Atomic.Samples.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\bin\Debug\Atomic.Samples.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\bin\Debug\Atomic.Core.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\bin\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.csprojResolveAssemblyReference.cache
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Samples\obj\Debug\Atomic.Samples.pdb

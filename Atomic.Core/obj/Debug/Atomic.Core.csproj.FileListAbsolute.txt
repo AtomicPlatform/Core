@@ -7,3 +7,7 @@ C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.pdb
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.dll
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.pdb

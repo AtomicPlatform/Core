@@ -10,12 +10,12 @@ namespace Atomic.Loader
     {
         public ProcessModel Import(string sourceText)
         {
-            throw new NotImplementedException();
+            return (ProcessModel)Newtonsoft.Json.JsonConvert.DeserializeObject(sourceText, typeof(ProcessModel));
         }
 
         public string Export(ProcessModel sourceModel)
         {
-            throw new NotImplementedException();
+            return Newtonsoft.Json.JsonConvert.SerializeObject(sourceModel);
         }
     }
 }

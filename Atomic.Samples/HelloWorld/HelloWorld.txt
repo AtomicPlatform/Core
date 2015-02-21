@@ -3,7 +3,7 @@ define process with name "Hello World"
     set start condition to "Task Done"
   add task with name "Display Greeting"
     set start condition to "Start Done"
-    do print "Hello world!"
+    begin print "Hello world!" end
   add condition with name "Start Done"
     when start event is done
   add condition with name "Task Done"

@@ -58,10 +58,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="MODEL\AtomicProcess.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="MODEL\" />
+    <Content Include="XSL\AppXML-To-BPMN.xslt" />
+    <Content Include="XSL\BPMN-To-AppXML.xslt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
