@@ -2,7 +2,8 @@
 <definitions id="definitions"
                   targetNamespace="http://atomicplatform.com"
                   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
-	<process id="hello_world" name="Hello World">
+  <?xml-stylesheet type="text/xsl" href="../BPMN-To-AppXML.xslt" ?>
+  <process id="hello_world" name="Hello World">
 		<startEvent id="_start" />
 		<endEvent id="_stop" />
 		<scriptTask id="display_greeting" name="Display Greeting" scriptFormat="">

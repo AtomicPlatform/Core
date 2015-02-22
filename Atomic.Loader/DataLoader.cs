@@ -17,40 +17,113 @@ namespace Atomic.Loader
 
     public struct ProcessModel
     {
-        public string Name;
-        
-        public string ID;
+        private string _name;
+        private string _id;
+        private EventModel[] _events;
+        private TaskModel[] _tasks;
+        private ConditionModel[] _conditions;
 
-        public EventModel[] Events;
+        public string Name
+        {
+            get { if (_name == null) _name = ""; return _name; }
+            set { if (value == null) value = ""; _name = value; }
+        }
 
-        public TaskModel[] Tasks;
+        public string ID
+        {
+            get { if (_id == null) _id = ""; return _id; }
+            set { if (value == null) value = ""; _id = value; }
+        }
 
-        public ConditionModel[] Conditions;
+        public EventModel[] Events
+        {
+            get { if (_events == null) _events = new EventModel[0]; return _events; }
+            set { if (value == null) value = new EventModel[0]; _events = value; }
+        }
+
+        public TaskModel[] Tasks
+        {
+            get { if (_tasks == null) _tasks = new TaskModel[0]; return _tasks; }
+            set { if (value == null) value = new TaskModel[0]; _tasks = value; }
+        }
+
+        public ConditionModel[] Conditions
+        {
+            get { if (_conditions == null) _conditions = new ConditionModel[0]; return _conditions; }
+            set { if (value == null) value = new ConditionModel[0]; _conditions = value; }
+        }
     }
 
     public struct EventModel
     {
-        public string ID;
+        private string _name;
+        private string _id;
+        private string _startConditionID;
+        private string _stopConditionID;
 
-        public string Name;
+        public string Name
+        {
+            get { if (_name == null) _name = ""; return _name; }
+            set { if (value == null) value = ""; _name = value; }
+        }
 
-        public string StartConditionID;
+        public string ID
+        {
+            get { if (_id == null) _id = ""; return _id; }
+            set { if (value == null) value = ""; _id = value; }
+        }
 
-        public string StopConditionID;
+        public string StartConditionID
+        {
+            get { if (_startConditionID == null) _startConditionID = ""; return _startConditionID; }
+            set { if (value == null) value = ""; _startConditionID = value; }
+        }
+
+        public string StopConditionID
+        {
+            get { if (_stopConditionID == null) _stopConditionID = ""; return _stopConditionID; }
+            set { if (value == null) value = ""; _stopConditionID = value; }
+        }
     }
 
 
     public struct TaskModel
     {
-        public string ID;
+        private string _name;
+        private string _id;
+        private string _startConditionID;
+        private string _stopConditionID;
+        private string _runScript;
 
-        public string Name;
+        public string Name
+        {
+            get { if (_name == null) _name = ""; return _name; }
+            set { if (value == null) value = ""; _name = value; }
+        }
 
-        public string StartConditionID;
+        public string ID
+        {
+            get { if (_id == null) _id = ""; return _id; }
+            set { if (value == null) value = ""; _id = value; }
+        }
 
-        public string StopConditionID;
+        public string StartConditionID
+        {
+            get { if (_startConditionID == null) _startConditionID = ""; return _startConditionID; }
+            set { if (value == null) value = ""; _startConditionID = value; }
+        }
 
-        public string RunScript;
+        public string StopConditionID
+        {
+            get { if (_stopConditionID == null) _stopConditionID = ""; return _stopConditionID; }
+            set { if (value == null) value = ""; _stopConditionID = value; }
+        }
+
+        public string RunScript
+        {
+            get { if (_runScript == null) _runScript = ""; return _runScript; }
+            set { if (value == null) value = ""; _runScript = value; }
+        }
     }
 
     public struct ConditionModel
@@ -60,13 +133,29 @@ namespace Atomic.Loader
             Done
         }
 
-        public string ID;
+        private string _name;
+        private string _id;
+        private string _taskID;
 
-        public string Name;
+        public string Name
+        {
+            get { if (_name == null) _name = ""; return _name; }
+            set { if (value == null) value = ""; _name = value; }
+        }
 
-        public string TaskID;
+        public string ID
+        {
+            get { if (_id == null) _id = ""; return _id; }
+            set { if (value == null) value = ""; _id = value; }
+        }
 
-        public TaskState State;
+        public string TaskID
+        {
+            get { if (_taskID == null) _taskID = ""; return _taskID; }
+            set { if (value == null) value = ""; _taskID = value; }
+        }
+
+        public TaskState State { get; set; }
     }
 
     static public class DataLoader

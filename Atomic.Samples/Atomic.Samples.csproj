@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <Content Include="BPMN-To-AppXML.xslt" />
     <Content Include="Countdown\Countdown.txt" />
     <Content Include="Countdown\Countdown.xml" />
     <Content Include="HelloWorld\HelloWorld.bpmn20.xml">
