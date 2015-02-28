@@ -19,21 +19,29 @@ namespace Atomic.Core
 
     public interface IRunnable : IElement
     {
-
         void Run();
 
         TaskState CurrentState { get; }
-    }
-
-    public interface ITask : IRunnable
-    {
-        IValue[] Values { get; set; }
 
         TaskFunction RunFunction { get; set; }
 
         ICondition StartCondition { get; set; }
 
         ICondition StopCondition { get; set; }
+
+        IValue[] Values { get; set; }
+    }
+
+    public interface IEvent : IElement
+    {
+        IValue[] Values { get; set; }
+
+        ICondition Condition { get; set; }
+    }
+
+    public interface ITask : IRunnable
+    {
+        string FunctionText { get; set; }
     }
 
     public interface ICondition : IElement
@@ -48,11 +56,13 @@ namespace Atomic.Core
 
     public interface IProcess : IRunnable
     {
-        ITask StartEvent { get; }
+        IEvent StartEvent { get; }
 
-        ITask[] Events { get; set; }
+        IEvent StopEvent { get; }
 
-        ITask StopEvent { get; }
+        IEvent[] Events { get; set; }
+
+        ITask[] Tasks { get; set; }
     }
 
     public enum TaskState
@@ -67,5 +77,5 @@ namespace Atomic.Core
 
     public delegate bool ConditionFunction(ITask task);
 
-    public delegate void TaskFunction(ITask task);
+    public delegate void TaskFunction(IRunnable task);
 }

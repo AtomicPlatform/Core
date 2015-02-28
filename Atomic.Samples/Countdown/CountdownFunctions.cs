@@ -6,7 +6,7 @@ namespace Atomic.Samples
 {
     static public class CountdownFunctions
     {
-        static public void DisplayCurrentCount(ITask task)
+        static public void DisplayCurrentCount(IRunnable task)
         {
             IValue countValue = task.Values.Where(x => x.Name == "index").FirstOrDefault();
             long currentCount = (long)countValue.Value;
@@ -24,7 +24,7 @@ namespace Atomic.Samples
             }
         }
 
-        static public void DecrementCount(ITask task)
+        static public void DecrementCount(IRunnable task)
         {
             IValue countValue = task.Values.Where(x => x.Name == "index").FirstOrDefault();
             countValue.Value = (long)countValue.Value - 1;
@@ -35,6 +35,7 @@ namespace Atomic.Samples
             return (long)countValue.Value == 0;
         }
 
+        /*
         static public bool TaskStateRunning(ITask task)
         {
             return task.CurrentState == TaskState.Running;
@@ -44,7 +45,7 @@ namespace Atomic.Samples
         {
             return task.CurrentState == TaskState.Done;
         }
-
+        */
         static public bool CountChanged(IValue countValue)
         {
             return countValue.Modified;

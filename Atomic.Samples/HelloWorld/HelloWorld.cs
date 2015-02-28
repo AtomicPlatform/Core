@@ -7,16 +7,19 @@ namespace Atomic.Samples
     {
         public HelloWorld()
         {
-            StartEvent.Values = new IValue[] 
-            {
-                new AtomicValue() { Name = "outputStream" }
+            Tasks = new ITask[] {
+                new AtomicTask() 
+                { 
+                    Name = "Display Greeting", 
+                    StartCondition = StartEvent.Condition,
+                    RunFunction = HelloWorldFunctions.DisplayHelloMessage
+                }
             };
-            StartEvent.RunFunction = HelloWorldFunctions.DisplayHelloMessage;
 
-            StopEvent.StartCondition = new TaskCondition()
+            StopEvent.Condition = new TaskCondition()
             {
-                Task = StartEvent,
-                MetFunction = CoreFunctions.TaskDone
+                Task = Tasks[0],
+                State = TaskState.Done
             };
         }
     }

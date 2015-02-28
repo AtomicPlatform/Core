@@ -27,7 +27,7 @@ namespace Atomic.Samples
             countdownTask.StartCondition = new TaskCondition()
             {
                 Task = activity,
-                MetFunction = CountdownFunctions.TaskStateRunning
+                State = TaskState.Running
             };
             countdownTask.StopCondition = new ValueCondition()
             {
@@ -57,7 +57,7 @@ namespace Atomic.Samples
                     new TaskCondition()
                     {
                         Task = countdownTask,
-                        MetFunction = CountdownFunctions.TaskStateDone
+                        State = TaskState.Done
                     },
                     new ValueCondition()
                     {
@@ -67,25 +67,27 @@ namespace Atomic.Samples
                 }
             };
 
-            activity.StartCondition = new TaskCondition()
+            activity.StartCondition = new RuleCondition()
             {
-                Task = StartEvent,
-                MetFunction = CoreFunctions.TaskDone
+                Conditions = new ICondition[] {
+                    StartEvent.Condition
+                }, 
+                MetFunction = CoreFunctions.AllConditionsMet
             };
             activity.Tasks = new ITask[] { displayCount, countdownTask };
             activity.StopCondition = new TaskCondition()
             {
                 Task = countdownTask,
-                MetFunction = CountdownFunctions.TaskStateDone
+                State = TaskState.Done
             };
 
-            StopEvent.StartCondition = new TaskCondition()
+            StopEvent.Condition = new TaskCondition()
             {
                 Task = activity,
-                MetFunction = CoreFunctions.TaskDone
+                State = TaskState.Done
             };
 
-            Events = new ITask[] { activity };
+            Tasks = new ITask[] { activity };
         }
     }
 

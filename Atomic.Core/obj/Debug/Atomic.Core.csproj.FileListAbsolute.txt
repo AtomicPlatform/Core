@@ -11,3 +11,4 @@ E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Cor
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.pdb
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.dll
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.csprojResolveAssemblyReference.cache

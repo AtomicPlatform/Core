@@ -8,14 +8,23 @@ namespace Atomic.Loader
 {
     public class BpmnConverter : IDataConverter
     {
-        public ProcessModel Import(string sourceText)
+        private IProcessModel _model = null;
+
+        public void Import(string sourceText)
         {
             throw new NotImplementedException();
         }
 
-        public string Export(ProcessModel sourceModel)
+        public string Export()
         {
             throw new NotImplementedException();
         }
+
+        public IProcessModel Model
+        {
+            get { return _model; }
+            private set { _model = (IProcessModel)value; }
+        }
+
     }
 }

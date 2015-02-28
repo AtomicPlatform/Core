@@ -7,7 +7,7 @@ namespace Atomic.Samples
 {
     static public class HelloWorldFunctions
     {
-        static public void DisplayHelloMessage(ITask task)
+        static public void DisplayHelloMessage(IRunnable task)
         {
             // get output stream
             IValue streamValue = task.Values.Where(x => x.Name == "outputStream").First();

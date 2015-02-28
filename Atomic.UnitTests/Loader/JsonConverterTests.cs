@@ -9,11 +9,10 @@ namespace Atomic.UnitTests.Loader
     [TestClass]
     public class JsonConverterTests
     {
-        private IDataConverter dc = null;
+        private JsonConverter dc = null;
 
-        private ProcessModel InitializeModel()
+        private JsonProcessModel InitializeModel(JsonProcessModel model)
         {
-            ProcessModel model = new ProcessModel();
             model.ID = "hello_world";
             model.Name = "Hello World";
 
@@ -53,8 +52,9 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonInitialStateTest()
         {
-            ProcessModel model = InitializeModel();
-            string resultText = dc.Export(model);
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            InitializeModel(model);
+            string resultText = dc.Export();
 
             Assert.IsTrue(resultText.StartsWith("{"));
             Assert.IsTrue(resultText.Contains("\"Name\":\"Hello World\""));
@@ -68,52 +68,68 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonEventTest()
         {
-            ProcessModel model = InitializeModel();
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            InitializeModel(model);
             model.Events = new EventModel[] {
-                new EventModel() { ID = "_stop", StartConditionID = "taskDone" }
+                    new EventModel() { ID = "_stop", Condition = new RefIdModel() { ID = "taskDone" } }
             };
 
-            string resultText = dc.Export(model);
+            string resultText = dc.Export();
             Assert.IsTrue(resultText.Contains("\"Events\":[{"));
             Assert.IsTrue(resultText.Contains("\"ID\":\"_stop\""));
             Assert.IsTrue(resultText.Contains("\"Name\":\"\""));
-            Assert.IsTrue(resultText.Contains("\"StartConditionID\":\"taskDone\""));
-            Assert.IsTrue(resultText.Contains("\"StopConditionID\":\"\""));
+            Assert.IsTrue(resultText.Contains("\"StartCondition\":{\"ID\":\"taskDone\"}"));
+            Assert.IsTrue(resultText.Contains("\"StopCondition\":null}"));
         }
 
         [TestMethod]
         public void ExportJsonTaskTest()
         {
-            ProcessModel model = InitializeModel();
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            InitializeModel(model);
             model.Tasks = new TaskModel[] {
-                new TaskModel() { ID = "display_greeting", Name = "Display Greeting", RunScript="print \"Hello World!\"", StartConditionID = "startDone" }
+                    new TaskModel() { 
+                        ID = "display_greeting", 
+                        Name = "Display Greeting", 
+                        RunScript="print \"Hello World!\"", 
+                        StartCondition = new RefIdModel() { ID = "startDone" }
+                    }
             };
 
-            string resultText = dc.Export(model);
+            string resultText = dc.Export();
             Assert.IsTrue(resultText.Contains("\"Tasks\":[{"));
             Assert.IsTrue(resultText.Contains("\"ID\":\"display_greeting\""));
             Assert.IsTrue(resultText.Contains("\"Name\":\"Display Greeting\""));
-            Assert.IsTrue(resultText.Contains("\"StartConditionID\":\"startDone\""));
-            Assert.IsTrue(resultText.Contains("\"StopConditionID\":\"\""));
+            Assert.IsTrue(resultText.Contains("\"StartCondition\":{\"ID\":\"startDone\"}"));
+            Assert.IsTrue(resultText.Contains("\"StopCondition\":null"));
             Assert.IsTrue(resultText.Contains("\"RunScript\":\"print \\\"Hello World!\\\"\""));
         }
 
         [TestMethod]
         public void ExportJsonConditionTest()
         {
-            ProcessModel model = InitializeModel();
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            InitializeModel(model);
             model.Conditions = new ConditionModel[] {
-                new ConditionModel() { ID = "startDone", TaskID="_start", State = ConditionModel.TaskState.Done }, 
-                new ConditionModel() { ID = "taskDone", TaskID="display_message", State = ConditionModel.TaskState.Done }
+                    new ConditionModel() { 
+                        ID = "startDone", 
+                        Task = new RefIdModel() { ID = "_start" }, 
+                        State = TaskModel.TaskState.Done 
+                    }, 
+                    new ConditionModel() { 
+                        ID = "taskDone", 
+                        Task = new RefIdModel() { ID = "display_message" }, 
+                        State = TaskModel.TaskState.Done 
+                    }
             };
 
-            string resultText = dc.Export(model);
+            string resultText = dc.Export();
             Assert.IsTrue(resultText.Contains("\"Conditions\":[{"));
             Assert.IsTrue(resultText.Contains("\"ID\":\"startDone\""));
-            Assert.IsTrue(resultText.Contains("\"TaskID\":\"_start\""));
+            Assert.IsTrue(resultText.Contains("\"Task\":{\"ID\":\"_start\"}"));
             Assert.IsTrue(resultText.Contains("\"State\":0"));
             Assert.IsTrue(resultText.Contains("\"ID\":\"taskDone\""));
-            Assert.IsTrue(resultText.Contains("\"TaskID\":\"display_message\""));
+            Assert.IsTrue(resultText.Contains("\"Task\":{\"ID\":\"display_message\"}"));
             Assert.IsTrue(resultText.Contains("\"State\":0"));
         }
 
@@ -121,7 +137,8 @@ namespace Atomic.UnitTests.Loader
         public void ImportJsonInitialStateTest()
         {
             string jsonText = "{\"Name\":\"Hello World\",\"ID\":\"hello_world\",\"Events\":null,\"Tasks\":null,\"Conditions\":null}";
-            ProcessModel model = dc.Import(jsonText);
+            dc.Import(jsonText);
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "hello_world");
             Assert.AreEqual(model.Name, "Hello World");
@@ -133,16 +150,16 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ImportJsonEventTest()
         {
-            string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":[{\"ID\":\"_stop\",\"Name\":null,\"StartConditionID\":\"taskDone\",\"StopConditionID\":null}],\"Tasks\":null,\"Conditions\":null}";
-            ProcessModel model = dc.Import(jsonText);
+            string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":[{\"ID\":\"_stop\",\"Name\":null,\"StartCondition\":{\"ID\":\"taskDone\"},\"StopCondition\":{\"ID\":\"\"}}],\"Tasks\":null,\"Conditions\":null}";
+            dc.Import(jsonText);
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "");
             Assert.AreEqual(model.Name, "");
             Assert.AreEqual(model.Events.Length, 1);
             Assert.AreEqual(model.Events[0].ID, "_stop");
             Assert.AreEqual(model.Events[0].Name, "");
-            Assert.AreEqual(model.Events[0].StartConditionID, "taskDone");
-            Assert.AreEqual(model.Events[0].StopConditionID, "");
+            Assert.AreEqual(model.Events[0].Condition.ID, "taskDone");
             Assert.AreEqual(model.Tasks.Length, 0);
             Assert.AreEqual(model.Conditions.Length, 0);
         }
@@ -150,8 +167,9 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ImportJsonTaskTest()
         {
-            string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":null,\"Tasks\":[{\"ID\":\"display_greeting\",\"Name\":\"Display Greeting\",\"StartConditionID\":\"startDone\",\"StopConditionID\":null,\"RunScript\":\"print \\\"Hello World!\\\"\"}],\"Conditions\":null}";
-            ProcessModel model = dc.Import(jsonText);
+            string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":null,\"Tasks\":[{\"ID\":\"display_greeting\",\"Name\":\"Display Greeting\",\"StartCondition\":{\"ID\":\"startDone\"},\"StopCondition\":{\"ID\":\"\"},\"RunScript\":\"print \\\"Hello World!\\\"\"}],\"Conditions\":null}";
+            dc.Import(jsonText);
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "");
             Assert.AreEqual(model.Name, "");
@@ -159,8 +177,8 @@ namespace Atomic.UnitTests.Loader
             Assert.AreEqual(model.Tasks.Length, 1);
             Assert.AreEqual(model.Tasks[0].ID, "display_greeting");
             Assert.AreEqual(model.Tasks[0].Name, "Display Greeting");
-            Assert.AreEqual(model.Tasks[0].StartConditionID, "startDone");
-            Assert.AreEqual(model.Tasks[0].StopConditionID, "");
+            Assert.AreEqual(model.Tasks[0].StartCondition.ID, "startDone");
+            Assert.AreEqual(model.Tasks[0].StopCondition.ID, "");
             Assert.AreEqual(model.Tasks[0].RunScript, "print \"Hello World!\"");
             Assert.AreEqual(model.Conditions.Length, 0);
         }
@@ -168,24 +186,39 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ImportJsonConditionTest()
         {
-            string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":null,\"Tasks\":null,\"Conditions\":[{\"ID\":\"startDone\",\"Name\":null,\"TaskID\":\"_start\",\"State\":0},{\"ID\":\"taskDone\",\"Name\":null,\"TaskID\":\"display_greeting\",\"State\":0}]}";
-            ProcessModel model = dc.Import(jsonText);
+            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            InitializeModel(model);
+            model.Conditions = new ConditionModel[] {
+                    new ConditionModel() { 
+                        ID = "startDone", 
+                        Task = new RefIdModel() { ID = "_start" }, 
+                        State = TaskModel.TaskState.Done 
+                    }, 
+                    new ConditionModel() { 
+                        ID = "taskDone", 
+                        Task = new RefIdModel() { ID = "display_message" }, 
+                        State = TaskModel.TaskState.Done 
+                    }
+            };
 
-            Assert.AreEqual(model.ID, "");
-            Assert.AreEqual(model.Name, "");
+            string jsonText = dc.Export();
+            dc.Import(jsonText);
+
+            Assert.AreEqual(model.ID, "hello_world");
+            Assert.AreEqual(model.Name, "Hello World");
             Assert.AreEqual(model.Events.Length, 0);
             Assert.AreEqual(model.Tasks.Length, 0);
             Assert.AreEqual(model.Conditions.Length, 2);
 
             Assert.AreEqual(model.Conditions[0].ID, "startDone");
             Assert.AreEqual(model.Conditions[0].Name, "");
-            Assert.AreEqual(model.Conditions[0].TaskID, "_start");
-            Assert.AreEqual(model.Conditions[0].State, ConditionModel.TaskState.Done);
+            Assert.AreEqual(model.Conditions[0].Task.ID, "_start");
+            Assert.AreEqual(model.Conditions[0].State, TaskModel.TaskState.Done);
 
             Assert.AreEqual(model.Conditions[1].ID, "taskDone");
             Assert.AreEqual(model.Conditions[1].Name, "");
-            Assert.AreEqual(model.Conditions[1].TaskID, "display_greeting");
-            Assert.AreEqual(model.Conditions[1].State, ConditionModel.TaskState.Done);
+            Assert.AreEqual(model.Conditions[1].Task.ID, "display_message");
+            Assert.AreEqual(model.Conditions[1].State, TaskModel.TaskState.Done);
         }
     }
 }

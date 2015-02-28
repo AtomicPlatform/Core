@@ -5,6 +5,7 @@ using System.Text;
 
 using Atomic.Core;
 using Atomic.Loader;
+using Atomic.Loader.Xml;
 
 namespace Atomic.ConsoleApp
 {
@@ -12,6 +13,33 @@ namespace Atomic.ConsoleApp
     {
         static void Main(string[] args)
         {
+            // define model
+            //IProcess p = new Atomic.Samples.HelloWorld();
+            IProcess p = new Atomic.Core.AtomicProcess();
+
+            // do a test run
+            RunCoreProgram(p);
+
+            Console.WriteLine("\nPress any key to continue.");
+            Console.ReadKey();
+
+            // export JSON model
+            JsonConverter jsonConvert = new JsonConverter();
+            ExportToFile(jsonConvert, p, ".json");
+
+            // export XML model
+            XmlConverter xmlConvert = new XmlConverter();
+            ExportToFile(xmlConvert, p, ".xml");
+
+            // export BPMN xml
+            XslTransformConverter bpmnConvert = new XslTransformConverter("../../XSL/AppXML-To-BPMN.xslt");
+            ExportToFile(bpmnConvert, p, ".bpmn20.xml");
+
+            // export plain text 
+            PlainTextConverter textConvert = new PlainTextConverter();
+            ExportToFile(textConvert, p, ".txt");
+
+            /*
             IProcess p = new Atomic.Samples.Countdown() { Name = "Countdown" };
             Atomic.Loader.ElementRegistry reg = new Atomic.Loader.ElementRegistry();
 
@@ -28,11 +56,13 @@ namespace Atomic.ConsoleApp
             serializedProcess.StartEvent.Values[0].Value = Console.Out;
 
             RunCoreProgram(serializedProcess);
+            */
 
             Console.WriteLine("\nPress any key to continue.");
             Console.ReadKey();
         }
 
+        /*
         private static void ExportRegistry(Atomic.Loader.ElementRegistry reg)
         {
             IDictionary<string, object> exportData = reg.Export();
@@ -88,6 +118,7 @@ namespace Atomic.ConsoleApp
 
             return reg;
         }
+        */
 
         static void RunCoreProgram(Atomic.Core.IProcess p)
         {
@@ -103,6 +134,28 @@ namespace Atomic.ConsoleApp
 
                 done = (p.CurrentState == Atomic.Core.TaskState.Done);
             }
+        }
+        // * */
+
+        static private void ExportToFile(IDataConverter convert, IProcess p, string fileExt)
+        {
+            // create JSON model
+            IProcessModel model = convert.Model;
+            model.Import(p);
+
+            //  create JSON text
+            string exportText = convert.Export();
+
+            // write JSON text to file
+            FileStream fs = null;
+            StreamWriter writer = null;
+
+            fs = new FileStream(p.Name + fileExt, FileMode.OpenOrCreate);
+            writer = new StreamWriter(fs);
+            writer.Write(exportText);
+            writer.Flush();
+            writer.Close();
+
         }
     }
 

@@ -3,11 +3,16 @@ namespace Atomic.Core
 {
     public static class CoreFunctions
     {
-        static public bool DefaultMetFunction(ITask task)
+        static public bool DefaultMetFunction()
         {
             return false;
         }
-
+                
+        static public bool DefaultMetFunction(IRunnable task)
+        {
+            return false;
+        }
+        
         static public bool DefaultMetFunction(IValue value)
         {
             return false;
@@ -23,12 +28,12 @@ namespace Atomic.Core
             return false;
         }
 
-        static public void DefaultRunFunction(ITask task)
+        static public void DefaultRunFunction(IRunnable task)
         {
             // do nothing
         }
 
-        static public bool TaskRunCompleted(ITask task)
+        static public bool TaskRunCompleted(IRunnable task)
         {
             return task.CurrentState == TaskState.RunComplete;
         }

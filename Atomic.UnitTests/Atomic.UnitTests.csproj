@@ -69,11 +69,6 @@
   <ItemGroup>
     <Folder Include="Core\" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Loader\HelloWorld.xml">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

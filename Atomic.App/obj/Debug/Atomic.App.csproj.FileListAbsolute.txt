@@ -12,3 +12,5 @@ E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\bin\Debug\Newtonsoft.
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\obj\Debug\Atomic.App.csprojResolveAssemblyReference.cache
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\obj\Debug\Atomic.App.exe
 E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\obj\Debug\Atomic.App.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\bin\Debug\Atomic.Loader.Xml.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.App\bin\Debug\Atomic.Loader.Xml.pdb

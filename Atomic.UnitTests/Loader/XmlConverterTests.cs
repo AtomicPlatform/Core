@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Xml;
+using System.IO;
+using System.Collections.Generic;
 
 using Atomic.Loader;
 
@@ -34,9 +36,9 @@ namespace Atomic.UnitTests.Loader
             return xmlText;
         }
 
-        private ProcessModel InitializeModel()
+        private XmlProcessModel InitializeModel()
         {
-            ProcessModel model = new ProcessModel();
+            XmlProcessModel model = new XmlProcessModel();
             model.ID = "hello_world";
             model.Name = "Hello World";
 
@@ -56,6 +58,55 @@ namespace Atomic.UnitTests.Loader
             return model;
         }
 
+        [TestMethod]
+        public void ExportNativeXmlInitialStateTest()
+        {
+            XmlConverter convert = new XmlConverter();
+            XmlProcessModel model = InitializeModel();
+
+            
+            model.Events = new EventListModel()
+            {
+                Event = new EventModel[] {
+                    new EventModel() { ID = "_stop", Condition = new RefIdModel() { ID = "taskDone" } }
+                }
+            };
+            
+            model.Tasks = new TaskListModel()
+            {
+                Task = new TaskModel[] 
+                {
+                    new TaskModel() 
+                    { 
+                        ID = "display_greeting", 
+                        Name = "Display Greeting", 
+                        RunScript="print \"Hello World!\"", 
+                        //StartCondition = new RefIdModel() { ID = "startDone" },
+                        //StopCondition = new RefIdModel()
+                    }
+                }
+            };
+            /*
+            model.Conditions = new ConditionListModel() 
+            { 
+                Condition = new ConditionModel[] {
+                    new ConditionModel() { 
+                        ID = "startDone", 
+                        Task = new RefIdModel() { ID = "_start" }, 
+                        State = ConditionModel.TaskState.Done 
+                    }, 
+                    new ConditionModel() { 
+                        ID = "taskDone", 
+                        Task = new RefIdModel() { ID = "display_message"}, 
+                        State = ConditionModel.TaskState.Done 
+                    }
+                }
+            };
+//            */
+
+            string s = convert.Export();
+        }
+        /*
         [TestMethod]
         public void ExportXmlInitialStateTest()
         {
@@ -113,33 +164,43 @@ namespace Atomic.UnitTests.Loader
             Assert.IsTrue(resultText.Contains("</atomic:events>"));
 
         }
+        */
 
-            /*
-             * <?xml version="1.0" encoding="utf-8"?>
+        [TestMethod]
+        public void ImportNativeXmlInitialStateTest()
+        {
+            XmlConverter convert = new XmlConverter();
+            StreamReader reader = new StreamReader(new FileStream("HelloWorld.xml", FileMode.Open));
+            string xmlText = reader.ReadToEnd();
+            reader.Close();
+        }
+
+        /*
+         * <?xml version="1.0" encoding="utf-8"?>
 <atomic:process xmlns:atomic="http://www.atomicplatform.com/Process"
-                id="hello_world" name="Hello World">
-  <atomic:events>
-    <atomic:event id="_stop">
-      <startOnCondition id="taskDone" />
-    </atomic:event>
-  </atomic:events>
-  <atomic:tasks>
-    <atomic:task id="display_greeting" name="Display Greeting">
-      <startOnCondition id="startDone" />
-      <runScript>print "Hello world!"</runScript>
-    </atomic:task>
-  </atomic:tasks>
-  <atomic:conditions>
-    <atomic:taskCondition id="startDone" name="Start Done">
-      <task id="_start" />
-      <state>Done</state>
-    </atomic:taskCondition>
-    <atomic:taskCondition id="taskDone" name="Task Done">
-      <task id="display_greeting" />
-      <state>Done</state>
-    </atomic:taskCondition>
-  </atomic:conditions>
+            id="hello_world" name="Hello World">
+<atomic:events>
+<atomic:event id="_stop">
+  <startOnCondition id="taskDone" />
+</atomic:event>
+</atomic:events>
+<atomic:tasks>
+<atomic:task id="display_greeting" name="Display Greeting">
+  <startOnCondition id="startDone" />
+  <runScript>print "Hello world!"</runScript>
+</atomic:task>
+</atomic:tasks>
+<atomic:conditions>
+<atomic:taskCondition id="startDone" name="Start Done">
+  <task id="_start" />
+  <state>Done</state>
+</atomic:taskCondition>
+<atomic:taskCondition id="taskDone" name="Task Done">
+  <task id="display_greeting" />
+  <state>Done</state>
+</atomic:taskCondition>
+</atomic:conditions>
 </atomic:process>
-             */
+         */
     }
 }

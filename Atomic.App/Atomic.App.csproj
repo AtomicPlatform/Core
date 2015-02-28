@@ -52,6 +52,10 @@
       <Project>{CA97771B-8174-4C36-BF4B-75EC70D1401C}</Project>
       <Name>Atomic.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Atomic.Loader.Xml\Atomic.Loader.Xml.csproj">
+      <Project>{517cb302-ce28-4fc1-b10e-2acc2b7456b1}</Project>
+      <Name>Atomic.Loader.Xml</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Atomic.Loader\Atomic.Loader.csproj">
       <Project>{8E01AA46-C2ED-4A7C-BCAB-34CBA4ADCE50}</Project>
       <Name>Atomic.Loader</Name>
