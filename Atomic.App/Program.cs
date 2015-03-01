@@ -150,12 +150,11 @@ namespace Atomic.ConsoleApp
             FileStream fs = null;
             StreamWriter writer = null;
 
-            fs = new FileStream(p.Name + fileExt, FileMode.OpenOrCreate);
+            fs = new FileStream("../../Samples/" + p.Name + fileExt, FileMode.Create);
             writer = new StreamWriter(fs);
             writer.Write(exportText);
             writer.Flush();
             writer.Close();
-
         }
     }
 

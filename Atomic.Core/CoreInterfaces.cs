@@ -25,21 +25,22 @@ namespace Atomic.Core
 
         TaskFunction RunFunction { get; set; }
 
+        IValue[] Values { get; set; }
+    }
+
+    public interface IStartable
+    {
         ICondition StartCondition { get; set; }
 
         ICondition StopCondition { get; set; }
-
-        IValue[] Values { get; set; }
     }
 
-    public interface IEvent : IElement
+    public interface IEvent : IElement, IStartable
     {
         IValue[] Values { get; set; }
-
-        ICondition Condition { get; set; }
     }
 
-    public interface ITask : IRunnable
+    public interface ITask : IRunnable, IStartable
     {
         string FunctionText { get; set; }
     }
@@ -63,6 +64,11 @@ namespace Atomic.Core
         IEvent[] Events { get; set; }
 
         ITask[] Tasks { get; set; }
+    }
+
+    public interface IMessage : IElement
+    {
+        IValue[] Values { get; set; }
     }
 
     public enum TaskState

@@ -10,25 +10,25 @@ namespace Atomic.Loader
 {
     public class JsonConverter : IDataConverter
     {
-        private JsonProcessModel _model = new JsonProcessModel();
+        private ProcessModel _model = new ProcessModel();
 
         public void Import(string sourceText)
         {
-            Model = (JsonProcessModel)JsonConvert.DeserializeObject(
+            Model = (ProcessModel)JsonConvert.DeserializeObject(
                 sourceText, 
-                typeof(JsonProcessModel)
+                typeof(ProcessModel)
             );
         }
 
         public string Export()
         {
-            return JsonConvert.SerializeObject((JsonProcessModel)Model);
+            return JsonConvert.SerializeObject((ProcessModel)Model);
         }
 
         public IProcessModel Model
         {
             get { return _model; }
-            private set { _model = (JsonProcessModel)value; }
+            private set { _model = (ProcessModel)value; }
         }
 
     }

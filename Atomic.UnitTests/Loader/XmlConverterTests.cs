@@ -65,14 +65,14 @@ namespace Atomic.UnitTests.Loader
             XmlProcessModel model = InitializeModel();
 
             
-            model.Events = new EventListModel()
+            model.EventList = new EventListModel()
             {
                 Event = new EventModel[] {
-                    new EventModel() { ID = "_stop", Condition = new RefIdModel() { ID = "taskDone" } }
+                    new EventModel() { ID = "_stop", StartCondition = new RefIdModel() { ID = "taskDone" } }
                 }
             };
             
-            model.Tasks = new TaskListModel()
+            model.TaskList = new TaskListModel()
             {
                 Task = new TaskModel[] 
                 {

@@ -67,6 +67,7 @@ namespace Atomic.Samples
                 }
             };
 
+            /*
             activity.StartCondition = new RuleCondition()
             {
                 Conditions = new ICondition[] {
@@ -74,6 +75,7 @@ namespace Atomic.Samples
                 }, 
                 MetFunction = CoreFunctions.AllConditionsMet
             };
+             */ 
             activity.Tasks = new ITask[] { displayCount, countdownTask };
             activity.StopCondition = new TaskCondition()
             {
@@ -81,12 +83,13 @@ namespace Atomic.Samples
                 State = TaskState.Done
             };
 
+            /*
             StopEvent.Condition = new TaskCondition()
             {
                 Task = activity,
                 State = TaskState.Done
             };
-
+            */
             Tasks = new ITask[] { activity };
         }
     }

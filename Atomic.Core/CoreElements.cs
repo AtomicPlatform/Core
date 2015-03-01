@@ -21,6 +21,11 @@ namespace Atomic.Core
         }
     }
 
+    public class AtomicMessage : AtomicElement, IMessage
+    {
+        public IValue[] Values { get; set; }
+    }
+
     public class AtomicValue : AtomicElement, IValue
     {
         private object _publicValue = null;
@@ -176,15 +181,15 @@ namespace Atomic.Core
 
     public class AtomicEvent : AtomicElement, IEvent
     {
-        static public ICondition DefaultCondition = new TaskCondition()
+        static public ICondition DefaultCondition = new StandaloneCondition()
         {
-            Task = null,
             MetFunction = CoreFunctions.DefaultMetFunction
         };
 
         public AtomicEvent()
         {
-            Condition = DefaultCondition;
+            StartCondition = DefaultCondition;
+            StopCondition = DefaultCondition;
 
             Values = new IValue[0];
         }
@@ -201,13 +206,16 @@ namespace Atomic.Core
                     v.Locked = value;
                 }
 
-                if (Condition != null) Condition.Locked = value;
+                if (StartCondition != null) StartCondition.Locked = value;
+                if (StopCondition != null) StopCondition.Locked = value;
 
                 base.Locked = value;
             }
         }
 
-        public ICondition Condition { get; set; }
+        public ICondition StartCondition { get; set; }
+
+        public ICondition StopCondition { get; set; }
 
         protected override string ElementName
         {
@@ -219,10 +227,6 @@ namespace Atomic.Core
     {
         public IValue[] Values { get; set; }
 
-        public ICondition StartCondition { get; set; }
-
-        public ICondition StopCondition { get; set; }
-
         public TaskFunction RunFunction { get; set; }
 
         public TaskState CurrentState { get; set; }
@@ -232,23 +236,23 @@ namespace Atomic.Core
 
     public class AtomicTask : AtomicRunnable, ITask
     {
-        static public ICondition DefaultStartCondition = new StandaloneCondition()
-        {
-            MetFunction = CoreFunctions.DefaultMetFunction
-        };
+        public ICondition StartCondition { get; set; }
 
-        public ICondition DefaultStopCondition = null;
+        public ICondition StopCondition { get; set; }
 
         public AtomicTask()
         {
-            DefaultStopCondition = new TaskCondition()
+            StopCondition = new TaskCondition()
             {
                 Task = this,
                 State = TaskState.RunComplete
             };
 
-            StartCondition = DefaultStartCondition;
-            StopCondition = DefaultStopCondition;
+            StartCondition = new StandaloneCondition()
+            {
+                MetFunction = CoreFunctions.DefaultMetFunction
+            };
+
             RunFunction = CoreFunctions.DefaultRunFunction;
         }
 
@@ -353,30 +357,34 @@ namespace Atomic.Core
     {
         public AtomicProcess()
         {
-            StartCondition = new TaskCondition()
-            {
-                Task = this,
-                State = TaskState.Ready
-            };
-
             StartEvent = new AtomicEvent()
             {
-                Condition = StartCondition
+                Name = "_start",
+                StartCondition = new TaskCondition()
+                {
+                    Task = this,
+                    State = TaskState.Ready
+                },
+                StopCondition = new TaskCondition()
+                {
+                    Task = this,
+                    State = TaskState.Active
+                }
             };
 
             StopEvent = new AtomicEvent()
             {
-                Condition = new TaskCondition()
+                Name = "_stop",
+                StartCondition = new TaskCondition()
                 {
                     Task = this,
                     State = TaskState.Running
+                },
+                StopCondition = new TaskCondition()
+                {
+                    Task = this,
+                    State = TaskState.RunComplete
                 }
-            };
-
-            StopCondition = new TaskCondition()
-            {
-                Task = this,
-                State = TaskState.RunComplete
             };
 
             Events = new IEvent[] { };
@@ -431,15 +439,17 @@ namespace Atomic.Core
             switch (CurrentState)
             {
                 case TaskState.Ready:
+                    if (StartEvent.StartCondition.Met())
+                    {
+                        CurrentState = TaskState.Active;
+                        StartEvent.Update();
+                    }
+                    break;
                 case TaskState.Active:
-                    if (StartEvent.Condition.Met())
+                    if (StartEvent.StopCondition.Met())
                     {
                         CurrentState = TaskState.Running;
                         StartEvent.Update();
-                    }
-                    else
-                    {
-                        CurrentState = TaskState.Active;
                     }
                     break;
                 case TaskState.Running:
@@ -448,7 +458,7 @@ namespace Atomic.Core
                         task.Update();
                     }
 
-                    if (StopEvent.Condition.Met())
+                    if (StopEvent.StartCondition.Met())
                     {
                         CurrentState = TaskState.RunComplete;
                         StopEvent.Update();
@@ -456,7 +466,7 @@ namespace Atomic.Core
                     break;
                 case TaskState.RunComplete:
                 case TaskState.Stopping:
-                    if (StopCondition.Met())
+                    if (StopEvent.StopCondition.Met())
                     {
                         CurrentState = TaskState.Done;
                     }

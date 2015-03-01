@@ -45,6 +45,10 @@ namespace Atomic.Loader
 
         string Name { get; set; }
 
+        EventModel StartEvent { get; set; }
+
+        EventModel StopEvent { get; set; }
+
         EventModel[] Events { get; }
 
         TaskModel[] Tasks { get; }
@@ -84,9 +88,7 @@ namespace Atomic.Loader
 
         protected RefIdModel CreateConditionReference(ProcessModel model, ICondition cond)
         {
-            ConditionModel condModel = new ConditionModel();
-            condModel.Import(model, cond);
-            model.AddCondition(condModel);
+            ConditionModel condModel = model.AddCondition(cond);
 
             RefIdModel idModel = new RefIdModel();
             idModel.ID = RefIdModel.GetModelID(cond);
@@ -101,9 +103,7 @@ namespace Atomic.Loader
                 return new RefIdModel() { ID = model.ID };
             }
 
-            TaskModel taskModel = new TaskModel();
-            taskModel.Import(model, task);
-            model.AddTask(taskModel);
+            TaskModel taskModel = model.AddTask((ITask)task);
 
             RefIdModel idModel = new RefIdModel();
             idModel.ID = RefIdModel.GetModelID(task);
@@ -125,48 +125,98 @@ namespace Atomic.Loader
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
 
-        internal void AddEvent(EventModel evtModel)
+        [XmlElement(ElementName = "startOnEvent")]
+        public EventModel StartEvent { get; set; }
+
+        [XmlElement(ElementName = "stopOnEvent")]
+        public EventModel StopEvent { get; set; }
+
+        internal EventModel AddEvent(IEvent evt)
         {
-            if (_events.ContainsKey(evtModel.ID)) return;
+            EventModel evtModel = CreateEventModel();
+            evtModel.Import(this, evt);
+
             _events[evtModel.ID] = evtModel;
+            return evtModel;
         }
 
-        internal void AddTask(TaskModel taskModel)
+        internal TaskModel AddTask(ITask task)
         {
-            if (_tasks.ContainsKey(taskModel.ID)) return;
+            TaskModel taskModel = CreateTaskModel();
+            taskModel.Import(this, task);
+
             _tasks[taskModel.ID] = taskModel;
+            return taskModel;
         }
 
-        internal void AddCondition(ConditionModel condModel)
+        internal ConditionModel AddCondition(ICondition cond)
         {
-            if (_conditions.ContainsKey(condModel.ID)) return;
+            ConditionModel condModel = CreateConditionModel();
+            condModel.Import(this, cond);
+
             _conditions[condModel.ID] = condModel;
+            return condModel;
         }
 
-        internal void AddValue(ValueModel valModel)
+        internal ValueModel AddValue(IValue val)
         {
-            if (_values.ContainsKey(valModel.ID)) return;
+            ValueModel valModel = CreateValueModel();
+            valModel.Import(this, val);
+
             _values[valModel.ID] = valModel;
+            return valModel;
         }
 
         public EventModel[] Events
         {
             get { return _events.Values.ToArray(); }
+            set
+            {
+                _events.Clear();
+                foreach (EventModel model in value)
+                {
+                    _events[model.ID] = model;
+                }
+            }
         }
 
         public TaskModel[] Tasks
         {
             get { return _tasks.Values.ToArray(); }
+            set
+            {
+                _tasks.Clear();
+                foreach (TaskModel model in value)
+                {
+                    _tasks[model.ID] = model;
+                }
+            }
         }
 
         public ConditionModel[] Conditions
         {
             get { return _conditions.Values.ToArray(); }
+            set
+            {
+                _conditions.Clear();
+                foreach (ConditionModel model in value)
+                {
+                    _conditions[model.ID] = model;
+                }
+            }
         }
 
         public ValueModel[] Values
         {
             get { return _values.Values.ToArray(); }
+            set
+            {
+                _values.Clear();
+                foreach (ValueModel model in value)
+                {
+                    _values[model.ID] = model;
+                }
+            }
         }
 
         virtual public void Import(IProcess process)
@@ -174,46 +224,50 @@ namespace Atomic.Loader
             ID = RefIdModel.GetModelID(process);
             Name = process.Name;
 
-            EventModel evtModel = new EventModel();
-            evtModel.Import(this, process.StartEvent);
-            AddEvent(evtModel);
+            StartEvent = CreateEventModel();
+            StartEvent.Import(this, process.StartEvent);
 
-            evtModel = new EventModel();
-            evtModel.Import(this, process.StopEvent);
-            AddEvent(evtModel);
+            StopEvent = CreateEventModel();
+            StopEvent.Import(this, process.StopEvent);
 
             foreach (IEvent evt in process.Events)
             {
-                evtModel = new EventModel();
-                evtModel.Import(this, evt);
-                AddEvent(evtModel);
+                AddEvent(evt);
             }
 
             foreach (ITask task in process.Tasks)
             {
-                TaskModel taskModel = new TaskModel();
-                taskModel.Import(this, task);
-                AddTask(taskModel);
+                AddTask(task);
             }
-
-            ConditionModel condModel = new ConditionModel();
-            condModel.Import(this, process.StartCondition);
-            AddCondition(condModel);
-
-            condModel = new ConditionModel();
-            condModel.Import(this, process.StopCondition);
-            AddCondition(condModel);
 
             foreach (IValue v in process.Values)
             {
-                ValueModel valModel = new ValueModel();
-                valModel.Import(this, v);
-                AddValue(valModel);
+                AddValue(v);
             }
 
             // remove default references
 
             // remove unreferenced items
+        }
+
+        virtual protected EventModel CreateEventModel()
+        {
+            return new EventModel();
+        }
+
+        virtual protected TaskModel CreateTaskModel()
+        {
+            return new TaskModel();
+        }
+
+        virtual protected ConditionModel CreateConditionModel()
+        {
+            return new ConditionModel();
+        }
+
+        virtual protected ValueModel CreateValueModel()
+        {
+            return new ValueModel();
         }
 
         public IProcess Export()
@@ -242,25 +296,35 @@ namespace Atomic.Loader
     [XmlRoot(ElementName = "event")]
     public class EventModel : ElementModel<IEvent>
     {
-        private RefIdModel _conditionID;
+        private RefIdModel _startConditionID;
+        private RefIdModel _stopConditionID;
 
-        [XmlElement(ElementName = "startConditionID")]
-        public RefIdModel Condition
+        [XmlElement(ElementName = "startOnCondition")]
+        public RefIdModel StartCondition
         {
-            get { return _conditionID; }
-            set { _conditionID = value; }
+            get { return _startConditionID; }
+            set { _startConditionID = value; }
+        }
+
+        [XmlElement(ElementName = "stopOnCondition")]
+        public RefIdModel StopCondition
+        {
+            get { return _stopConditionID; }
+            set { _stopConditionID = value; }
         }
 
         override public void Import(ProcessModel model, IEvent evt)
         {
             base.Import(model, evt);
-            Condition = CreateConditionReference(model, evt.Condition);
+            StartCondition = CreateConditionReference(model, evt.StartCondition);
+            StopCondition = CreateConditionReference(model, evt.StopCondition);
         }
 
         override public IEvent Export(ExportRegistry reg)
         {
             IEvent evt = base.Export(reg);
-            evt.Condition = reg.GetCondition(Condition.ID);
+            evt.StartCondition = reg.GetCondition(StartCondition.ID);
+            evt.StopCondition = reg.GetCondition(StopCondition.ID);
 
             return evt;
         }
@@ -283,7 +347,7 @@ namespace Atomic.Loader
         }
     }
 
-    public class TaskModel : ElementModel<IRunnable>
+    public class TaskModel : ElementModel<ITask>
     {
         public enum TaskState
         {
@@ -299,14 +363,14 @@ namespace Atomic.Loader
         private RefIdModel _stopConditionID;
         private string _runScript;
 
-        [XmlElement(ElementName = "startCondition")]
+        [XmlElement(ElementName = "startOnCondition")]
         public RefIdModel StartCondition
         {
             get { return _startConditionID; }
             set { _startConditionID = value; }
         }
 
-        [XmlElement(ElementName = "stopCondition")]
+        [XmlElement(ElementName = "stopOnCondition")]
         public RefIdModel StopCondition
         {
             get { return _stopConditionID; }
@@ -320,7 +384,7 @@ namespace Atomic.Loader
             set { if (value == null) value = ""; _runScript = value; }
         }
 
-        override public void Import(ProcessModel model, IRunnable task)
+        override public void Import(ProcessModel model, ITask task)
         {
             base.Import(model, task);
             if (task is ITask)
@@ -332,14 +396,14 @@ namespace Atomic.Loader
             StopCondition = CreateConditionReference(model, task.StopCondition);
         }
 
-        override public IRunnable Export(ExportRegistry reg)
+        override public ITask Export(ExportRegistry reg)
         {
-            IRunnable t = base.Export(reg);
+            ITask t = base.Export(reg);
 
             return t;
         }
 
-        protected override IRunnable GetElement(ExportRegistry reg)
+        protected override ITask GetElement(ExportRegistry reg)
         {
             return reg.GetTask(ID);
         }
@@ -353,7 +417,6 @@ namespace Atomic.Loader
             return modelState;
         }
     }
-
 
     public struct ConditionListModel
     {
@@ -378,6 +441,7 @@ namespace Atomic.Loader
             set { _taskID = value; }
         }
 
+        [XmlElement(ElementName = "state")]
         public Atomic.Loader.TaskModel.TaskState State { get; set; }
 
         override public void Import(ProcessModel model, ICondition cond)
@@ -405,15 +469,27 @@ namespace Atomic.Loader
         }
     }
 
+    public struct ValueListModel
+    {
+        private ValueModel[] _values;
+
+        [XmlElement(ElementName = "value")]
+        public ValueModel[] Value
+        {
+            get { if (_values == null) _values = new ValueModel[0]; return _values; }
+            set { if (value == null) value = new ValueModel[0]; _values = value; }
+        }
+    }
+
     public class ValueModel : ElementModel<IValue>
     {
         [XmlText()]
-        public object Value { get; set; }
+        public string Value { get; set; }
 
         override public void Import(ProcessModel model, IValue v)
         {
             base.Import(model, v);
-            Value = v.Value;
+            Value = v.Value.ToString();
         }
 
         override public IValue Export(ExportRegistry reg)
@@ -429,44 +505,6 @@ namespace Atomic.Loader
         }
     }
 
-    public class JsonProcessModel : ProcessModel
-    {
-        new public EventModel[] Events
-        {
-            get { return base.Events.ToArray(); }
-            set
-            {
-                foreach (EventModel evtModel in value)
-                {
-                    base.AddEvent(evtModel);
-                }
-            }
-        }
-
-        new public TaskModel[] Tasks
-        {
-            get { return base.Tasks.ToArray(); }
-            set
-            {
-                foreach (TaskModel taskModel in value)
-                {
-                    base.AddTask(taskModel);
-                }
-            }
-        }
-
-        new public ConditionModel[] Conditions
-        {
-            get { return base.Conditions.ToArray(); }
-            set
-            {
-                foreach (ConditionModel condModel in value)
-                {
-                    base.AddCondition(condModel);
-                }
-            }
-        }
-    }
 
     [XmlRoot(Namespace = "http://www.atomicplatform.com/Process",
      ElementName = "process")]
@@ -475,43 +513,75 @@ namespace Atomic.Loader
         private EventListModel _events;
         private TaskListModel _tasks;
         private ConditionListModel _conditions;
+        private ValueListModel _values;
 
         [XmlElement(ElementName = "events")]
-        new public EventListModel Events
+        public EventListModel EventList
         {
             get { return _events; }
             set { _events = value; }
         }
 
         [XmlElement(ElementName = "tasks")]
-        new public TaskListModel Tasks
+        public TaskListModel TaskList
         {
             get { return _tasks; }
             set { _tasks = value; }
         }
 
         [XmlElement(ElementName = "conditions")]
-        new public ConditionListModel Conditions
+        public ConditionListModel ConditionList
         {
             get { return _conditions; }
             set { _conditions = value; }
+        }
+
+        [XmlElement(ElementName = "values")]
+        public ValueListModel ValueList
+        {
+            get { return _values; }
+            set { _values = value; }
+        }
+
+        new public ConditionModel[] Conditions
+        {
+            get;
+            set;
+        }
+
+        new public EventModel[] Events
+        {
+            get;
+            set;
+        }
+
+        new public TaskModel[] Tasks
+        {
+            get;
+            set;
+        }
+
+        new public ValueModel[] Values
+        {
+            get;
+            set;
         }
 
         public override void Import(IProcess process)
         {
             base.Import(process);
 
-            EventListModel evtListModel = Events;
+            EventListModel evtListModel = EventList;
             evtListModel.Event = base.Events;
-            Events = evtListModel;
+            EventList = evtListModel;
 
-            TaskListModel taskListModel = Tasks;
+            TaskListModel taskListModel = TaskList;
             taskListModel.Task = base.Tasks;
-            Tasks = taskListModel;
+            TaskList = taskListModel;
 
-            ConditionListModel condListModel = Conditions;
+            ConditionListModel condListModel = ConditionList;
             condListModel.Condition = base.Conditions;
-            Conditions = condListModel;
+            ConditionList = condListModel;
         }
     }
 

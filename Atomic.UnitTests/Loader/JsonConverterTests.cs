@@ -11,7 +11,7 @@ namespace Atomic.UnitTests.Loader
     {
         private JsonConverter dc = null;
 
-        private JsonProcessModel InitializeModel(JsonProcessModel model)
+        private ProcessModel InitializeModel(ProcessModel model)
         {
             model.ID = "hello_world";
             model.Name = "Hello World";
@@ -52,7 +52,7 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonInitialStateTest()
         {
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
             InitializeModel(model);
             string resultText = dc.Export();
 
@@ -68,10 +68,10 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonEventTest()
         {
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
             InitializeModel(model);
             model.Events = new EventModel[] {
-                    new EventModel() { ID = "_stop", Condition = new RefIdModel() { ID = "taskDone" } }
+                    new EventModel() { ID = "_stop", StartCondition = new RefIdModel() { ID = "taskDone" } }
             };
 
             string resultText = dc.Export();
@@ -85,7 +85,7 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonTaskTest()
         {
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
             InitializeModel(model);
             model.Tasks = new TaskModel[] {
                     new TaskModel() { 
@@ -108,7 +108,7 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ExportJsonConditionTest()
         {
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
             InitializeModel(model);
             model.Conditions = new ConditionModel[] {
                     new ConditionModel() { 
@@ -138,7 +138,7 @@ namespace Atomic.UnitTests.Loader
         {
             string jsonText = "{\"Name\":\"Hello World\",\"ID\":\"hello_world\",\"Events\":null,\"Tasks\":null,\"Conditions\":null}";
             dc.Import(jsonText);
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "hello_world");
             Assert.AreEqual(model.Name, "Hello World");
@@ -152,14 +152,14 @@ namespace Atomic.UnitTests.Loader
         {
             string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":[{\"ID\":\"_stop\",\"Name\":null,\"StartCondition\":{\"ID\":\"taskDone\"},\"StopCondition\":{\"ID\":\"\"}}],\"Tasks\":null,\"Conditions\":null}";
             dc.Import(jsonText);
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "");
             Assert.AreEqual(model.Name, "");
             Assert.AreEqual(model.Events.Length, 1);
             Assert.AreEqual(model.Events[0].ID, "_stop");
             Assert.AreEqual(model.Events[0].Name, "");
-            Assert.AreEqual(model.Events[0].Condition.ID, "taskDone");
+            Assert.AreEqual(model.Events[0].StartCondition.ID, "taskDone");
             Assert.AreEqual(model.Tasks.Length, 0);
             Assert.AreEqual(model.Conditions.Length, 0);
         }
@@ -169,7 +169,7 @@ namespace Atomic.UnitTests.Loader
         {
             string jsonText = "{\"Name\":null,\"ID\":null,\"Events\":null,\"Tasks\":[{\"ID\":\"display_greeting\",\"Name\":\"Display Greeting\",\"StartCondition\":{\"ID\":\"startDone\"},\"StopCondition\":{\"ID\":\"\"},\"RunScript\":\"print \\\"Hello World!\\\"\"}],\"Conditions\":null}";
             dc.Import(jsonText);
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
 
             Assert.AreEqual(model.ID, "");
             Assert.AreEqual(model.Name, "");
@@ -186,7 +186,7 @@ namespace Atomic.UnitTests.Loader
         [TestMethod]
         public void ImportJsonConditionTest()
         {
-            JsonProcessModel model = (JsonProcessModel)dc.Model;
+            ProcessModel model = (ProcessModel)dc.Model;
             InitializeModel(model);
             model.Conditions = new ConditionModel[] {
                     new ConditionModel() { 

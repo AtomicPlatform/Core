@@ -41,7 +41,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converters\BpmnConverter.cs" />
     <Compile Include="DataLoader.cs" />
     <Compile Include="Converters\JsonConverter.cs" />
     <Compile Include="Converters\XmlConverter.cs" />
@@ -61,10 +60,8 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="XSL\AppXML-To-BPMN.xslt" />
-    <Content Include="XSL\BPMN-To-AppXML.xslt" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

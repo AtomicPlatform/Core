@@ -7,9 +7,13 @@
   <xs:element name="process">
     <xs:complexType>
       <xs:sequence>
+        <xs:element name="startOnEvent" type="atomic:eventType" />
+        <xs:element name="StopOnEvent" type="atomic:eventType" />
+
         <xs:element ref="atomic:events" />
         <xs:element ref="atomic:tasks" />
         <xs:element ref="atomic:conditions" />
+        <xs:element ref="atomic:values" />
       </xs:sequence>
       <xs:attribute name="id" type="xs:string" use="required" />
       <xs:attribute name="name" type="xs:string" use="optional" />
@@ -41,8 +45,10 @@
 
   <xs:complexType name="taskType">
     <xs:complexContent>
-      <xs:extension base="atomic:eventType">
+      <xs:extension base="atomic:element">
         <xs:sequence>
+          <xs:element name="startOnCondition" type="atomic:idType" minOccurs="0" />
+          <xs:element name="stopOnCondition" type="atomic:idType" minOccurs="0" />
           <xs:element name="runScript" type="xs:string" />
         </xs:sequence>
       </xs:extension>
@@ -56,7 +62,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="taskCondition">
+  <xs:element name="condition">
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="atomic:conditionType">
@@ -91,6 +97,14 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="value">
+    <xs:complexType mixed="true">
+      <xs:complexContent>
+        <xs:extension base="atomic:element" />
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="tasks">
     <xs:complexType>
       <xs:sequence>
@@ -110,7 +124,15 @@
   <xs:element name="conditions">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="atomic:taskCondition" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="atomic:condition" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="values">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:value" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

@@ -11,12 +11,12 @@ namespace Atomic.Samples
                 new AtomicTask() 
                 { 
                     Name = "Display Greeting", 
-                    StartCondition = StartEvent.Condition,
+                    StartCondition = StartEvent.StopCondition,
                     RunFunction = HelloWorldFunctions.DisplayHelloMessage
                 }
             };
 
-            StopEvent.Condition = new TaskCondition()
+            StopEvent.StartCondition = new TaskCondition()
             {
                 Task = Tasks[0],
                 State = TaskState.Done

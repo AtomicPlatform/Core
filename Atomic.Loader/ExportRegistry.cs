@@ -11,7 +11,7 @@ namespace Atomic.Loader
     public class ExportRegistry
     {
         private IDictionary<string, IEvent> _events = new Dictionary<string, IEvent>();
-        private IDictionary<string, IRunnable> _tasks = new Dictionary<string, IRunnable>();
+        private IDictionary<string, ITask> _tasks = new Dictionary<string, ITask>();
         private IDictionary<string, ICondition> _conditions = new Dictionary<string, ICondition>();
         private IDictionary<string, IValue> _values = new Dictionary<string, IValue>();
 
@@ -44,7 +44,7 @@ namespace Atomic.Loader
             return null;
         }
 
-        public IRunnable GetTask(string id)
+        public ITask GetTask(string id)
         {
             return null;
         }
