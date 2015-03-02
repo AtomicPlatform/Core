@@ -15,9 +15,13 @@ namespace Atomic.Loader
         private IDictionary<string, ICondition> _conditions = new Dictionary<string, ICondition>();
         private IDictionary<string, IValue> _values = new Dictionary<string, IValue>();
 
+        private IDictionary<string, IProcess> _process = new Dictionary<string, IProcess>();
+
         // improve this to evaluate the model to create the correct object type
         public ExportRegistry(IProcessModel model)
         {
+            _process[model.ID] = new AtomicProcess();
+
             foreach (EventModel evtModel in model.Events)
             {
                 _events.Add(evtModel.ID, new AtomicEvent());
@@ -39,19 +43,29 @@ namespace Atomic.Loader
             }
         }
 
+        public IProcess Process
+        {
+            get { return _process.Values.First(); }
+        }
+
         public IEvent GetEvent(string id)
         {
             return null;
         }
 
-        public ITask GetTask(string id)
+        public IRunnable GetTask(string id)
         {
+            if (_process.ContainsKey(id))
+            {
+                return Process;
+            }
+
             return null;
         }
 
         public ICondition GetCondition(string id)
         {
-            return null;
+            return _conditions[id];
         }
 
         public IValue GetValue(string id)

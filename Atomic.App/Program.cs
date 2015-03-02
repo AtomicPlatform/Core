@@ -13,9 +13,18 @@ namespace Atomic.ConsoleApp
     {
         static void Main(string[] args)
         {
-            // define model
-            //IProcess p = new Atomic.Samples.HelloWorld();
-            IProcess p = new Atomic.Core.AtomicProcess();
+            // open model file
+            DirectoryInfo samplesDir = new DirectoryInfo("../../Samples");
+            FileInfo xmlFile = new FileInfo(samplesDir.FullName + "/base.xml");
+
+            StreamReader reader = new StreamReader(new FileStream(xmlFile.FullName, FileMode.Open));
+            string xmlText = reader.ReadToEnd();
+            reader.Close();
+
+            // create process
+            XmlConverter xmlConvert = new XmlConverter();
+            xmlConvert.Import(xmlText);
+            IProcess p = xmlConvert.Model.Export();
 
             // do a test run
             RunCoreProgram(p);
@@ -23,6 +32,7 @@ namespace Atomic.ConsoleApp
             Console.WriteLine("\nPress any key to continue.");
             Console.ReadKey();
 
+            /*
             // export JSON model
             JsonConverter jsonConvert = new JsonConverter();
             ExportToFile(jsonConvert, p, ".json");
@@ -38,6 +48,7 @@ namespace Atomic.ConsoleApp
             // export plain text 
             PlainTextConverter textConvert = new PlainTextConverter();
             ExportToFile(textConvert, p, ".txt");
+            */
 
             /*
             IProcess p = new Atomic.Samples.Countdown() { Name = "Countdown" };

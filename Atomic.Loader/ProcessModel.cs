@@ -167,7 +167,7 @@ namespace Atomic.Loader
             return valModel;
         }
 
-        public EventModel[] Events
+        virtual public EventModel[] Events
         {
             get { return _events.Values.ToArray(); }
             set
@@ -180,7 +180,7 @@ namespace Atomic.Loader
             }
         }
 
-        public TaskModel[] Tasks
+        virtual public TaskModel[] Tasks
         {
             get { return _tasks.Values.ToArray(); }
             set
@@ -193,7 +193,7 @@ namespace Atomic.Loader
             }
         }
 
-        public ConditionModel[] Conditions
+        virtual public ConditionModel[] Conditions
         {
             get { return _conditions.Values.ToArray(); }
             set
@@ -206,7 +206,7 @@ namespace Atomic.Loader
             }
         }
 
-        public ValueModel[] Values
+        virtual public ValueModel[] Values
         {
             get { return _values.Values.ToArray(); }
             set
@@ -273,11 +273,36 @@ namespace Atomic.Loader
         public IProcess Export()
         {
             ExportRegistry reg = new ExportRegistry(this);
-
-            IProcess p = new AtomicProcess();
+            IProcess p = reg.Process;
             p.Name = Name;
 
+            ExportEvent(reg, p.StartEvent, StartEvent);
+            ExportEvent(reg, p.StopEvent, StopEvent);
+
+            foreach (ConditionModel condModel in Conditions)
+            {
+                ExportCondition(reg, reg.GetCondition(condModel.ID), condModel);
+            }
+
             return p;
+        }
+
+        private void ExportCondition(ExportRegistry reg, ICondition cond, ConditionModel condModel)
+        {
+            cond.Name = condModel.Name;
+            if (cond is TaskCondition)
+            {
+                TaskCondition taskCond = (TaskCondition)cond;
+                taskCond.Task = reg.GetTask(condModel.Task.ID);
+                taskCond.State = (Atomic.Core.TaskState)Enum.Parse(typeof(Atomic.Core.TaskState), condModel.State.ToString());
+            }
+        }
+
+        private void ExportEvent(ExportRegistry reg, IEvent evt, EventModel evtModel)
+        {
+            evt.Name = StartEvent.Name;
+            evt.StartCondition = reg.GetCondition(evtModel.StartCondition.ID);
+            evt.StopCondition = reg.GetCondition(evtModel.StopCondition.ID);
         }
     }
 
@@ -405,7 +430,7 @@ namespace Atomic.Loader
 
         protected override ITask GetElement(ExportRegistry reg)
         {
-            return reg.GetTask(ID);
+            return (ITask)reg.GetTask(ID);
         }
 
         static internal TaskState GetState(Atomic.Core.TaskState taskState)
@@ -543,28 +568,28 @@ namespace Atomic.Loader
             set { _values = value; }
         }
 
-        new public ConditionModel[] Conditions
+        override public ConditionModel[] Conditions
         {
-            get;
-            set;
+            get { return _conditions.Condition; }
+            set {}
         }
 
-        new public EventModel[] Events
+        override public EventModel[] Events
         {
-            get;
-            set;
+            get { return _events.Event; }
+            set { }
         }
 
-        new public TaskModel[] Tasks
+        override public TaskModel[] Tasks
         {
-            get;
-            set;
+            get { return _tasks.Task; }
+            set { }
         }
 
-        new public ValueModel[] Values
+        override public ValueModel[] Values
         {
-            get;
-            set;
+            get { return _values.Value; }
+            set { }
         }
 
         public override void Import(IProcess process)
