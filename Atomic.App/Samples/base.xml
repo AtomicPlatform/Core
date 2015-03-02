@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<process xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="AtomicProcess27226607" name="program27226607" xmlns="http://www.atomicplatform.com/Process">
+  <startOnEvent id="AtomicEvent66790640" name="_start">
+    <startOnCondition id="TaskCondition54061692" />
+    <stopOnCondition id="TaskCondition1936867" />
+  </startOnEvent>
+  <stopOnEvent id="AtomicEvent12302711" name="_stop">
+    <startOnCondition id="TaskCondition34649137" />
+    <stopOnCondition id="TaskCondition11328498" />
+  </stopOnEvent>
+  <events />
+  <tasks />
+  <conditions>
+    <condition id="TaskCondition54061692" name="condition54061692">
+      <task id="AtomicProcess27226607" />
+      <state>Ready</state>
+    </condition>
+    <condition id="TaskCondition1936867" name="condition1936867">
+      <task id="AtomicProcess27226607" />
+      <state>Active</state>
+    </condition>
+    <condition id="TaskCondition34649137" name="condition34649137">
+      <task id="AtomicProcess27226607" />
+      <state>Running</state>
+    </condition>
+    <condition id="TaskCondition11328498" name="condition11328498">
+      <task id="AtomicProcess27226607" />
+      <state>RunComplete</state>
+    </condition>
+  </conditions>
+  <values />
+</process>

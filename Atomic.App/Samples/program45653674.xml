@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<process xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" id="AtomicProcess45653674" name="program45653674" xmlns="http://www.atomicplatform.com/Process">
+  <startOnEvent id="AtomicEvent39785641" name="_start">
+    <startOnCondition id="TaskCondition45523402" />
+    <stopOnCondition id="TaskCondition35287174" />
+  </startOnEvent>
+  <stopOnEvent id="AtomicEvent44419000" name="_stop">
+    <startOnCondition id="TaskCondition52697953" />
+    <stopOnCondition id="TaskCondition22597652" />
+  </stopOnEvent>
+  <Conditions>
+    <ConditionModel id="TaskCondition45523402" name="condition45523402">
+      <task id="AtomicProcess45653674" />
+      <state>Ready</state>
+    </ConditionModel>
+    <ConditionModel id="TaskCondition35287174" name="condition35287174">
+      <task id="AtomicProcess45653674" />
+      <state>Active</state>
+    </ConditionModel>
+    <ConditionModel id="TaskCondition52697953" name="condition52697953">
+      <task id="AtomicProcess45653674" />
+      <state>Running</state>
+    </ConditionModel>
+    <ConditionModel id="TaskCondition22597652" name="condition22597652">
+      <task id="AtomicProcess45653674" />
+      <state>RunComplete</state>
+    </ConditionModel>
+  </Conditions>
+  <events />
+  <tasks />
+  <conditions>
+    <condition id="TaskCondition45523402" name="condition45523402">
+      <task id="AtomicProcess45653674" />
+      <state>Ready</state>
+    </condition>
+    <condition id="TaskCondition35287174" name="condition35287174">
+      <task id="AtomicProcess45653674" />
+      <state>Active</state>
+    </condition>
+    <condition id="TaskCondition52697953" name="condition52697953">
+      <task id="AtomicProcess45653674" />
+      <state>Running</state>
+    </condition>
+    <condition id="TaskCondition22597652" name="condition22597652">
+      <task id="AtomicProcess45653674" />
+      <state>RunComplete</state>
+    </condition>
+  </conditions>
+  <values />
+</process>

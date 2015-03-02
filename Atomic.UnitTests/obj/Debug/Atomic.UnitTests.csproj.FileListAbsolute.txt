@@ -1,0 +1,11 @@
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.UnitTests.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.UnitTests.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.Core.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.Loader.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Newtonsoft.Json.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.Core.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Atomic.Loader.pdb
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Debug\Newtonsoft.Json.xml
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Debug\Atomic.UnitTests.csprojResolveAssemblyReference.cache
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Debug\Atomic.UnitTests.dll
+E:\Projects\LocalGit\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Debug\Atomic.UnitTests.pdb

@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<definitions id="definitions" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:atomic="http://www.atomicplatform.com/Process">
+  <process id="AtomicProcess27226607" name="program27226607">
+    <startEvent id="_start" />
+    <endEvent id="_stop" />
+  </process>
+</definitions>

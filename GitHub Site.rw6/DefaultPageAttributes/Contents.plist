@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SandwichFillings</key>
+	<array>
+		<dict>
+			<key>Dictionary</key>
+			<dict>
+				<key>ColourStyles</key>
+				<dict>
+					<key>Atlas</key>
+					<dict>
+						<key>%colour_body_background%</key>
+						<string>#333333</string>
+					</dict>
+					<key>Mirage</key>
+					<dict/>
+					<key>Reason</key>
+					<dict/>
+					<key>Tesla</key>
+					<dict/>
+					<key>Veerle</key>
+					<dict/>
+				</dict>
+				<key>CreditRapidWeaver</key>
+				<true/>
+				<key>DefaultLinkTarget</key>
+				<string></string>
+				<key>FilenameExtension</key>
+				<string>html</string>
+				<key>HasCustomThemeStyle</key>
+				<false/>
+				<key>ImageFormat</key>
+				<string>Original</string>
+				<key>ImageQuality</key>
+				<string>High</string>
+				<key>IndexFilename</key>
+				<string></string>
+				<key>OutputFormat</key>
+				<string>Default</string>
+				<key>OutputXMLDeclaration</key>
+				<false/>
+				<key>SidebarEnabled</key>
+				<integer>1</integer>
+				<key>TextEncoding</key>
+				<string>utf-8</string>
+				<key>ThemeStyles</key>
+				<dict>
+					<key>Atlas</key>
+					<array>
+						<string>Advanced Site Options.Advanced Options - Sidebar - Hide if Empty</string>
+						<string>Advanced Site Options.Advanced Site Options - Use Responsive Layout</string>
+						<string>EC2 Background Image.EC2 BG - Dark Linen</string>
+						<string>EC3 Background Image.EC3 BG - Dark Linen</string>
+						<string>EC3 Background Image.EC4 BG - Light Linen</string>
+						<string>Font Size.Site Font - Medium</string>
+						<string>Header Image Height.Header Image Height - 300px</string>
+						<string>Header Image Selection.image7.jpg</string>
+						<string>Menu - Font Size.Menu - Font Size - Medium</string>
+						<string>Menu - Font.Menu Font - Trebuchet</string>
+						<string>Menu Background.Menu Background - Concrete</string>
+						<string>Menu Position.Menu Position &amp; Display - Above Header Image</string>
+						<string>Menu Type.Menu Type - Always visible</string>
+						<string>Page Top Spacing.Page Top Spacing - 100px</string>
+						<string>Sidebar Background Image.Sidebar BG - Light Linen</string>
+						<string>Sidebar Background Position.Sidebar BG - Top Center</string>
+						<string>Sidebar Background Repeat.Sidebar BG - Repeat</string>
+						<string>Sidebar Display.Sidebar Display - Above Content</string>
+						<string>Site Background Image.No Background Image</string>
+						<string>Site Background Position.Top Center</string>
+						<string>Site Background Repeat.Repeat</string>
+						<string>Site Font.Colaborate</string>
+						<string>Site Logo/Title Position.Site Logo/Title Position - Left</string>
+						<string>Site Width.800px</string>
+						<string>Sub Menu - Width.Sub Menu - Width - Medium</string>
+					</array>
+					<key>Tesla</key>
+					<array>
+						<string>Banner Background.Banner 8</string>
+						<string>Maximum Content Width.960 px</string>
+						<string>Sidebar.Hidden</string>
+					</array>
+				</dict>
+			</dict>
+			<key>Files</key>
+			<array/>
+			<key>Subsandwiches</key>
+			<array/>
+		</dict>
+	</array>
+	<key>Type</key>
+	<string>Page Attributes</string>
+</dict>
+</plist>

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<process xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Hello World" id="hello_world" xmlns="http://www.atomicplatform.com/Process">
+  <events>
+    <event name="" id="_stop">
+      <startConditionID id="taskDone" />
+      <stopConditionID id="" />
+    </event>
+  </events>
+  <tasks>
+    <task name="Display Greeting" id="display_greeting">
+      <startConditionID id="startDone" />
+      <stopConditionID id="" />
+      <runScript>print "Hello World!"</runScript>
+    </task>
+  </tasks>
+  <conditions>
+    <condition name="" id="startDone">
+      <task id="_start" />
+      <State>Done</State>
+    </condition>
+    <condition name="" id="taskDone">
+      <task id="display_message" />
+      <State>Done</State>
+    </condition>
+  </conditions>
+</process>
