@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 
@@ -9,10 +10,67 @@ using Atomic.Loader.Xml;
 
 namespace Atomic.ConsoleApp
 {
+    public class ExportContainer : BaseContainer
+    {
+        public DirectoryInfo DirectoryPath { get; set; }
+
+        public IDataConverter Converter { get; set; }
+
+        public override void Run()
+        {
+            foreach (IProcess p in ProcessList)
+            {
+                IProcessModel model = Converter.Model;
+                model.Import(p);
+
+                //  create JSON text
+                string exportText = Converter.Export();
+
+                // write JSON text to file
+                FileStream fs = null;
+                StreamWriter writer = null;
+
+                fs = new FileStream(DirectoryPath.FullName + "/" + p.Name + "." + Converter.FileExtension, FileMode.Create);
+                writer = new StreamWriter(fs);
+                writer.Write(exportText);
+                writer.Flush();
+                writer.Close();
+            }
+        }
+
+        public override void ExecuteFunction(string functionText)
+        {
+        }
+    }
+
+    public class ConsoleContainer : RunContainer
+    {
+        public override void ExecuteFunction(string functionText)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
+            ExportContainer container = new ExportContainer();
+            container.DirectoryPath = new DirectoryInfo("../../Samples");
+            container.Converter = new PlainTextConverter();
+            container.AddProcess(new AtomicProcess() { Name = "SimpleModel" });
+
+            container.Run();
+            
+            /*
+            IContainer container = new ConsoleContainer();
+            container.DebugMode = true;
+            container.DebugStream = Console.OpenStandardOutput();
+            container.AddProcess(new AtomicProcess() { Name = "SimpleModel" });
+
+            container.Run();
+            */
+            /*
             // open model file
             DirectoryInfo samplesDir = new DirectoryInfo("../../Samples");
             FileInfo xmlFile = new FileInfo(samplesDir.FullName + "/base.xml");
@@ -31,7 +89,7 @@ namespace Atomic.ConsoleApp
 
             Console.WriteLine("\nPress any key to continue.");
             Console.ReadKey();
-
+            */
             /*
             // export JSON model
             JsonConverter jsonConvert = new JsonConverter();

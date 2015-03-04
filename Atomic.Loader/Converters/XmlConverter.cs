@@ -12,17 +12,19 @@ namespace Atomic.Loader
 {
     public class XmlConverter : IDataConverter
     {
-        private XmlProcessModel _model = new XmlProcessModel();
+        private ProcessModel _model = new ProcessModel();
+
+        public string FileExtension { get { return "xml"; } }
 
         virtual public void Import(string sourceText)
         {
-            XmlSerializer ser = new XmlSerializer(typeof(XmlProcessModel));
-            Model = (XmlProcessModel)ser.Deserialize(new StringReader(sourceText));
+            XmlSerializer ser = new XmlSerializer(typeof(ProcessModel));
+            Model = (ProcessModel)ser.Deserialize(new StringReader(sourceText));
         }
 
         virtual public string Export()
         {
-            XmlSerializer ser = new XmlSerializer(typeof(XmlProcessModel));
+            XmlSerializer ser = new XmlSerializer(typeof(ProcessModel));
             byte[] b = new byte[65535];
             MemoryStream outStream = new MemoryStream(b);
 
@@ -40,7 +42,7 @@ namespace Atomic.Loader
         public IProcessModel Model
         {
             get { return _model; }
-            private set { _model = (XmlProcessModel)value; }
+            private set { _model = (ProcessModel)value; }
         }
     }
 }

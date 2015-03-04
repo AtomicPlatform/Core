@@ -1,13 +1,43 @@
 ﻿
 namespace Atomic.Core
 {
+    public interface IContainer
+    {
+        bool DebugMode { get; set; }
+
+        System.IO.Stream DebugStream { get; set; }
+
+        IProcess[] ProcessList { get; }
+
+        void AddProcess(IProcess p);
+
+        void Run();
+
+        void ExecuteFunction(string functionText);
+    }
+
     public interface IElement
     {
+        string ID { get; }
+
         string Name { get; set; }
 
         void Update();
 
         bool Locked { get; set; }
+    }
+
+    public interface IFunction : IElement
+    {
+        string AsmName { get; }
+
+        string ModuleName { get; }
+
+        string MethodName { get; }
+
+        System.Reflection.MethodInfo Method { get; }
+
+        void SetProperties(string assemblyName, string moduleName, string methodName);
     }
 
     public interface IValue : IElement
@@ -37,7 +67,6 @@ namespace Atomic.Core
 
     public interface IEvent : IElement, IStartable
     {
-        IValue[] Values { get; set; }
     }
 
     public interface ITask : IRunnable, IStartable
@@ -64,6 +93,10 @@ namespace Atomic.Core
         IEvent[] Events { get; set; }
 
         ITask[] Tasks { get; set; }
+
+        IEvent DefaultStartEvent { get; }
+
+        IEvent DefaultStopEvent { get; }
     }
 
     public interface IMessage : IElement

@@ -30,11 +30,6 @@ namespace Atomic.Samples
             countValue.Value = (long)countValue.Value - 1;
         }
 
-        static public bool AtZero(IValue countValue)
-        {
-            return (long)countValue.Value == 0;
-        }
-
         /*
         static public bool TaskStateRunning(ITask task)
         {
@@ -46,14 +41,5 @@ namespace Atomic.Samples
             return task.CurrentState == TaskState.Done;
         }
         */
-        static public bool CountChanged(IValue countValue)
-        {
-            return countValue.Modified;
-        }
-
-        static public bool NotLessThanZero(IValue countValue)
-        {
-            return (long)countValue.Value >= 0;
-        }
     }
 }

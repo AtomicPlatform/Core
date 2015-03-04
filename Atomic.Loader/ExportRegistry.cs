@@ -14,6 +14,7 @@ namespace Atomic.Loader
         private IDictionary<string, ITask> _tasks = new Dictionary<string, ITask>();
         private IDictionary<string, ICondition> _conditions = new Dictionary<string, ICondition>();
         private IDictionary<string, IValue> _values = new Dictionary<string, IValue>();
+        private IDictionary<string, IFunction> _functions = new Dictionary<string, IFunction>();
 
         private IDictionary<string, IProcess> _process = new Dictionary<string, IProcess>();
 
@@ -40,6 +41,11 @@ namespace Atomic.Loader
             foreach (ValueModel valModel in model.Values)
             {
                 _values.Add(valModel.ID, new AtomicValue());
+            }
+
+            foreach (FunctionModel funcModel in model.Functions)
+            {
+                _values.Add(funcModel.ID, new AtomicValue());
             }
         }
 
@@ -70,7 +76,13 @@ namespace Atomic.Loader
 
         public IValue GetValue(string id)
         {
-            return null;
+            return _values[id];
         }
+
+        public IFunction GetFunction(string id)
+        {
+            return _functions[id];
+        }
+
     }
 }

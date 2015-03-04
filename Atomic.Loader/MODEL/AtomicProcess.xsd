@@ -7,13 +7,14 @@
   <xs:element name="process">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="startOnEvent" type="atomic:eventType" />
-        <xs:element name="StopOnEvent" type="atomic:eventType" />
+        <xs:element name="startOnEvent" type="atomic:eventType" minOccurs="0" />
+        <xs:element name="stopOnEvent" type="atomic:eventType" minOccurs="0" />
 
         <xs:element ref="atomic:events" />
         <xs:element ref="atomic:tasks" />
         <xs:element ref="atomic:conditions" />
         <xs:element ref="atomic:values" />
+        <xs:element ref="atomic:functions" />
       </xs:sequence>
       <xs:attribute name="id" type="xs:string" use="required" />
       <xs:attribute name="name" type="xs:string" use="optional" />
@@ -66,16 +67,23 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="atomic:conditionType">
-          <xs:sequence>
-            <xs:element name="task" type="atomic:idType" minOccurs="1" maxOccurs="1" />
-            <xs:element name="state" minOccurs="1" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:enumeration value="Done" />
-                </xs:restriction>
-              </xs:simpleType>
-            </xs:element>
-          </xs:sequence>
+          <xs:choice>
+            <xs:sequence>
+              <xs:element name="task" type="atomic:idType" minOccurs="1" maxOccurs="1" />
+              <xs:element name="state" minOccurs="1" maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:enumeration value="Done" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:element name="value" type="atomic:idType" minOccurs="1" maxOccurs="1" />
+              <xs:element name="expectedValue" type="xs:string" minOccurs="1" maxOccurs="1" />
+              <xs:element name="function" type="atomic:idType" minOccurs="1" maxOccurs="1" />
+            </xs:sequence>
+          </xs:choice>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -98,13 +106,35 @@
   </xs:element>
 
   <xs:element name="value">
-    <xs:complexType mixed="true">
+    <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="atomic:element" />
+        <xs:extension base="atomic:element">
+          <xs:sequence>
+            <xs:element name="initialValue" type="xs:string" />
+            <xs:choice>
+              <xs:element name="task" type="atomic:idType" />
+            </xs:choice>
+          </xs:sequence>
+        </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="function">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="atomic:element">
+          <xs:sequence>
+            <xs:element name="assembly" type="xs:string" />
+            <xs:element name="module" type="xs:string" />
+            <xs:element name="method" type="xs:string" />
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+
+  </xs:element>
+  
   <xs:element name="tasks">
     <xs:complexType>
       <xs:sequence>
@@ -133,6 +163,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="atomic:value" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="functions">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="atomic:function" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

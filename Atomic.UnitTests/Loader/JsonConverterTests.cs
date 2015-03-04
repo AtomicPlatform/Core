@@ -114,12 +114,12 @@ namespace Atomic.UnitTests.Loader
                     new ConditionModel() { 
                         ID = "startDone", 
                         Task = new RefIdModel() { ID = "_start" }, 
-                        State = TaskModel.TaskState.Done 
+                        State = "Done" 
                     }, 
                     new ConditionModel() { 
                         ID = "taskDone", 
                         Task = new RefIdModel() { ID = "display_message" }, 
-                        State = TaskModel.TaskState.Done 
+                        State = "Done" 
                     }
             };
 
@@ -192,12 +192,12 @@ namespace Atomic.UnitTests.Loader
                     new ConditionModel() { 
                         ID = "startDone", 
                         Task = new RefIdModel() { ID = "_start" }, 
-                        State = TaskModel.TaskState.Done 
+                        State = "Done" 
                     }, 
                     new ConditionModel() { 
                         ID = "taskDone", 
                         Task = new RefIdModel() { ID = "display_message" }, 
-                        State = TaskModel.TaskState.Done 
+                        State = "Done" 
                     }
             };
 
@@ -213,12 +213,12 @@ namespace Atomic.UnitTests.Loader
             Assert.AreEqual(model.Conditions[0].ID, "startDone");
             Assert.AreEqual(model.Conditions[0].Name, "");
             Assert.AreEqual(model.Conditions[0].Task.ID, "_start");
-            Assert.AreEqual(model.Conditions[0].State, TaskModel.TaskState.Done);
+            Assert.AreEqual(model.Conditions[0].State, "Done");
 
             Assert.AreEqual(model.Conditions[1].ID, "taskDone");
             Assert.AreEqual(model.Conditions[1].Name, "");
             Assert.AreEqual(model.Conditions[1].Task.ID, "display_message");
-            Assert.AreEqual(model.Conditions[1].State, TaskModel.TaskState.Done);
+            Assert.AreEqual(model.Conditions[1].State, "Done");
         }
     }
 }

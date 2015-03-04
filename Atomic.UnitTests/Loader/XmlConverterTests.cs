@@ -36,9 +36,9 @@ namespace Atomic.UnitTests.Loader
             return xmlText;
         }
 
-        private XmlProcessModel InitializeModel()
+        private ProcessModel InitializeModel()
         {
-            XmlProcessModel model = new XmlProcessModel();
+            ProcessModel model = new ProcessModel();
             model.ID = "hello_world";
             model.Name = "Hello World";
 
@@ -62,19 +62,13 @@ namespace Atomic.UnitTests.Loader
         public void ExportNativeXmlInitialStateTest()
         {
             XmlConverter convert = new XmlConverter();
-            XmlProcessModel model = InitializeModel();
+            ProcessModel model = InitializeModel();
 
-            
-            model.EventList = new EventListModel()
-            {
-                Event = new EventModel[] {
+            model.Events = new EventModel[] {
                     new EventModel() { ID = "_stop", StartCondition = new RefIdModel() { ID = "taskDone" } }
-                }
-            };
+                };
             
-            model.TaskList = new TaskListModel()
-            {
-                Task = new TaskModel[] 
+            model.Tasks = new TaskModel[] 
                 {
                     new TaskModel() 
                     { 
@@ -84,7 +78,6 @@ namespace Atomic.UnitTests.Loader
                         //StartCondition = new RefIdModel() { ID = "startDone" },
                         //StopCondition = new RefIdModel()
                     }
-                }
             };
             /*
             model.Conditions = new ConditionListModel() 

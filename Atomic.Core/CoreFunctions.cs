@@ -13,9 +13,9 @@ namespace Atomic.Core
             return false;
         }
         
-        static public bool DefaultMetFunction(IValue value)
+        static public bool ValueEqualFunction(IValue value, object expectedResult)
         {
-            return false;
+            return value.Value.Equals(expectedResult);
         }
 
         static public bool DefaultMetFunction(ICondition condition)

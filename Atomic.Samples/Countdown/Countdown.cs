@@ -7,17 +7,19 @@ namespace Atomic.Samples
     {
         public Countdown()
         {
+            /*
             StartEvent.Values = new IValue[] 
             {
                 new AtomicValue() { Name = "outputStream" }
             };
-
+            */
             IActivity activity = new AtomicActivity() { Name = "Start" };
+            /*
             activity.Values = new IValue[] 
             {
                 StartEvent.Values[0]
             };
-
+            */
             AtomicTask countdownTask = new AtomicTask();
             countdownTask.Values = new IValue[] 
             {
@@ -32,7 +34,7 @@ namespace Atomic.Samples
             countdownTask.StopCondition = new ValueCondition()
             {
                 Value = countdownTask.Values[0],
-                MetFunction = CountdownFunctions.AtZero
+                ExpectedValue = 0
             };
 
             AtomicTask displayCount = new AtomicTask();
@@ -45,8 +47,8 @@ namespace Atomic.Samples
             displayCount.RunFunction = CountdownFunctions.DisplayCurrentCount;
             displayCount.StartCondition = new ValueCondition()
             {
-                Value = countdownTask.Values[0],
-                MetFunction = CountdownFunctions.CountChanged
+                Value = new ValueModifiedView() { CompareValue = countdownTask.Values[0] },
+                ExpectedValue = true
             };
 
             displayCount.StopCondition = new RuleCondition()
@@ -62,7 +64,7 @@ namespace Atomic.Samples
                     new ValueCondition()
                     {
                         Value = countdownTask.Values[0],
-                        MetFunction = CountdownFunctions.AtZero
+                        ExpectedValue = 0
                     }
                 }
             };

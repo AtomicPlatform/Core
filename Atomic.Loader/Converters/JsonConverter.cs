@@ -12,6 +12,8 @@ namespace Atomic.Loader
     {
         private ProcessModel _model = new ProcessModel();
 
+        public string FileExtension { get { return "json"; } }
+
         public void Import(string sourceText)
         {
             Model = (ProcessModel)JsonConvert.DeserializeObject(

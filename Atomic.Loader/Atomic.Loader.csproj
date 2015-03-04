@@ -41,12 +41,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataLoader.cs" />
     <Compile Include="Converters\JsonConverter.cs" />
     <Compile Include="Converters\XmlConverter.cs" />
     <Compile Include="Converters\PlainTextConverter.cs" />
     <Compile Include="ExportRegistry.cs" />
-    <Compile Include="ProcessModel.cs" />
+    <Compile Include="LoaderInterfaces.cs" />
+    <Compile Include="LoaderModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
