@@ -287,7 +287,7 @@ namespace Atomic.Core
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
-            if (obj is AtomicValue)
+            if (obj is IValue)
             {
                 AtomicValue val = (AtomicValue)obj;
                 if (val.Value == null)
@@ -469,7 +469,7 @@ namespace Atomic.Core
         }
 
         private IValue _value = Undefined.Value;
-        private object _expected = null;
+        private IValue _expected = Undefined.Value;
 
         public ValueCondition()
         {
@@ -511,7 +511,7 @@ namespace Atomic.Core
             set { _value = value; }
         }
 
-        public object ExpectedValue
+        public IValue ExpectedValue
         {
             get { return _expected; }
             set { _expected = value; }
@@ -858,20 +858,20 @@ namespace Atomic.Core
             { 
                 Task = this, 
                 Name = "_startEvent_startView" 
-            }; 
+            };
 
             evt.StartCondition = new ValueCondition()
             {
                 Name = "_startEvent_start",
                 Value = startView,
-                ExpectedValue = TaskState.Ready
+                ExpectedValue = new AtomicValue() { Value = TaskState.Ready }
             };
 
             evt.StopCondition = new ValueCondition()
             {
-               Name = "_startEvent_stop",
-               Value = new TaskStateView() { Task = this, Name = "_startEvent_stopView" },
-               ExpectedValue = TaskState.Active
+                Name = "_startEvent_stop",
+                Value = new TaskStateView() { Task = this, Name = "_startEvent_stopView" },
+                ExpectedValue = new AtomicValue() { Value = TaskState.Active }
             };
         }
 
@@ -888,14 +888,14 @@ namespace Atomic.Core
             {
                 Name = "_stopEvent_start",
                 Value = startView,
-                ExpectedValue = TaskState.Running
+                ExpectedValue = new AtomicValue() { Value = TaskState.Running }
             };
 
             evt.StopCondition = new ValueCondition()
             {
                 Name = "_stopEvent_stop",
                 Value = new TaskStateView() { Task = this, Name = "_startEvent_stopView" },
-                ExpectedValue = TaskState.RunComplete
+                ExpectedValue = new AtomicValue() { Value = TaskState.RunComplete }
             };
         }
 

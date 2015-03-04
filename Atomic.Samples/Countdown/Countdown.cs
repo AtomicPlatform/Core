@@ -34,7 +34,7 @@ namespace Atomic.Samples
             countdownTask.StopCondition = new ValueCondition()
             {
                 Value = countdownTask.Values[0],
-                ExpectedValue = 0
+                ExpectedValue = new AtomicValue() {  Value = 0 }
             };
 
             AtomicTask displayCount = new AtomicTask();
@@ -48,7 +48,7 @@ namespace Atomic.Samples
             displayCount.StartCondition = new ValueCondition()
             {
                 Value = new ValueModifiedView() { CompareValue = countdownTask.Values[0] },
-                ExpectedValue = true
+                ExpectedValue = new AtomicValue { Value = true }
             };
 
             displayCount.StopCondition = new RuleCondition()
@@ -64,7 +64,7 @@ namespace Atomic.Samples
                     new ValueCondition()
                     {
                         Value = countdownTask.Values[0],
-                        ExpectedValue = 0
+                        ExpectedValue = new AtomicValue() { Value = 0 }
                     }
                 }
             };

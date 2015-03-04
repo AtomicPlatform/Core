@@ -55,21 +55,26 @@ namespace Atomic.ConsoleApp
     {
         static void Main(string[] args)
         {
-            ExportContainer container = new ExportContainer();
-            container.DirectoryPath = new DirectoryInfo("../../Samples");
-            container.Converter = new PlainTextConverter();
-            container.AddProcess(new AtomicProcess() { Name = "SimpleModel" });
+            IProcess p = new AtomicProcess() { Name = "SimpleModel" };
+
+            IContainer container = new ExportContainer()
+            {
+                DirectoryPath = new DirectoryInfo("../../Samples"),
+                Converter = new PlainTextConverter()
+            };
+
+            container.AddProcess(p);
 
             container.Run();
             
-            /*
-            IContainer container = new ConsoleContainer();
-            container.DebugMode = true;
-            container.DebugStream = Console.OpenStandardOutput();
-            container.AddProcess(new AtomicProcess() { Name = "SimpleModel" });
+            
+            IContainer runContainer = new ConsoleContainer();
+            runContainer.DebugMode = true;
+            runContainer.DebugStream = Console.OpenStandardOutput();
+            runContainer.AddProcess(p);
 
-            container.Run();
-            */
+            runContainer.Run();
+            
             /*
             // open model file
             DirectoryInfo samplesDir = new DirectoryInfo("../../Samples");
