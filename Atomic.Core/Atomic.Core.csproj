@@ -37,11 +37,14 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conditions.cs" />
     <Compile Include="CoreElements.cs" />
     <Compile Include="CoreFunctions.cs" />
     <Compile Include="CoreInterfaces.cs" />
+    <Compile Include="Events.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Undefined.cs" />
+    <Compile Include="Views.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

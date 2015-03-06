@@ -1,9 +1,0 @@
-﻿{
-	"process":{"name":"Hello World","id":"hello_world"},
-	"tasks":[{"name":"Display Greeting","id":"display_greeting","startOn":["start_done"],"function":"print \"Hello world!\""}],
-	"conditions":[
-		{"name":"Start Done","id":"start_done","task":"_start","state":"done"},
-		{"name":"Task Done","id":"task_done","task":"display_greeting","state":"done"}
-	],
-	"_stop":{"startOn":["task_done"]}
-}

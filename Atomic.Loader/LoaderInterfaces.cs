@@ -36,10 +36,6 @@ namespace Atomic.Loader
 
         string Name { get; set; }
 
-        EventModel StartEvent { get; set; }
-
-        EventModel StopEvent { get; set; }
-
         EventModel[] Events { get; }
 
         TaskModel[] Tasks { get; }

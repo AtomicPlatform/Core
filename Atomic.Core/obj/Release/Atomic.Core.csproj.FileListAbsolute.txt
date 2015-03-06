@@ -1,0 +1,4 @@
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Release\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Release\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Release\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Release\Atomic.Core.pdb

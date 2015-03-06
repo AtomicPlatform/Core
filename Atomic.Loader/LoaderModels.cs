@@ -108,62 +108,83 @@ namespace Atomic.Loader
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
 
-        [XmlElement(ElementName = "startOnEvent", Namespace="")]
-        public EventModel StartEvent { get; set; }
-
-        [XmlElement(ElementName = "stopOnEvent", Namespace="")]
-        public EventModel StopEvent { get; set; }
-
         internal EventModel AddEvent(IEvent evt)
         {
-            EventModel evtModel = CreateEventModel();
-            evtModel.Import(this, evt);
+            EventModel evtModel = null;
+            if (_events.ContainsKey(evt.ID))
+            {
+                evtModel = _events[evt.ID];
+            }
+            else
+            {
+                evtModel = CreateEventModel(evt);
+            }
 
-            _events[evtModel.ID] = evtModel;
             return evtModel;
         }
 
         internal TaskModel AddTask(ITask task)
         {
-            TaskModel taskModel = CreateTaskModel();
-            taskModel.Import(this, task);
+            TaskModel taskModel = null;
+            if (_tasks.ContainsKey(task.ID))
+            {
+                taskModel = _tasks[task.ID];
+            }
+            else
+            {
+                taskModel = CreateTaskModel(task);
+            }
 
-            _tasks[taskModel.ID] = taskModel;
             return taskModel;
         }
 
         internal ConditionModel AddCondition(ICondition cond)
         {
-            ConditionModel condModel = CreateConditionModel();
-            condModel.Import(this, cond);
+            ConditionModel condModel = null;
+            if (_conditions.ContainsKey(cond.ID))
+            {
+                condModel = _conditions[cond.ID];
+            }
+            else
+            {
+                condModel = CreateConditionModel(cond);
+            }
 
-            _conditions[condModel.ID] = condModel;
             return condModel;
         }
 
         internal ValueModel AddValue(IValue val)
         {
-            ValueModel valModel = CreateValueModel();
-            valModel.Import(this, val);
+            ValueModel valModel = null;
+            if (_conditions.ContainsKey(val.ID))
+            {
+                valModel = _values[val.ID];
+            }
+            else
+            {
+                valModel = CreateValueModel(val);
+            }
 
-            _values[valModel.ID] = valModel;
             return valModel;
         }
 
         internal FunctionModel AddFunction(IFunction func)
         {
-            FunctionModel funcModel = new FunctionModel() { ID = func.ID };
-            funcModel.Import(this, func);
-
-            foreach (FunctionModel funcValue in _functions.Values)
+            FunctionModel funcModel = null;
+            if (_functions.ContainsKey(func.ID))
             {
-                if (funcValue.Equals(funcModel))
-                {
-                    return funcValue;
-                }
+                funcModel = _functions[func.ID];
+            }
+            else
+            {
+                FunctionModel existModel = _functions.Values.Where(
+                    x => x.AssemblyName == func.AsmName 
+                        && x.MethodName == func.MethodName 
+                        && x.ModuleName == func.ModuleName).FirstOrDefault();
+
+                funcModel = (existModel == null) ? CreateFunctionModel(func) : existModel;
             }
 
-            _functions[funcModel.ID] = funcModel;
             return funcModel;
         }
 
@@ -247,17 +268,8 @@ namespace Atomic.Loader
             ID = process.ID;
             Name = process.Name;
 
-            if (!process.StartEvent.Equals(process.DefaultStartEvent))
-            {
-                StartEvent = CreateEventModel();
-                StartEvent.Import(this, process.StartEvent);
-            }
+            AddCondition(process.DoneCondition);
 
-            if (!process.StopEvent.Equals(process.DefaultStopEvent))
-            {
-                StopEvent = CreateEventModel();
-                StopEvent.Import(this, process.StopEvent);
-            }
             foreach (IEvent evt in process.Events)
             {
                 AddEvent(evt);
@@ -278,24 +290,49 @@ namespace Atomic.Loader
             // remove unreferenced items
         }
 
-        virtual protected EventModel CreateEventModel()
+        virtual protected EventModel CreateEventModel(IEvent evt)
         {
-            return new EventModel();
+            EventModel evtModel = new EventModel() { ID = evt.ID, Name = evt.Name };
+            _events[evt.ID] = evtModel;
+            evtModel.Import(this, evt);
+
+            return evtModel;
         }
 
-        virtual protected TaskModel CreateTaskModel()
+        virtual protected FunctionModel CreateFunctionModel(IFunction func)
         {
-            return new TaskModel();
+            FunctionModel funcModel = new FunctionModel() { ID = func.ID, Name = func.Name };
+            _functions[func.ID] = funcModel;
+            funcModel.Import(this, func);
+
+            return funcModel;
         }
 
-        virtual protected ConditionModel CreateConditionModel()
+        virtual protected TaskModel CreateTaskModel(ITask task)
         {
-            return new ConditionModel();
+            TaskModel taskModel = new TaskModel() { ID = task.ID, Name = task.Name };
+            _tasks[task.ID] = taskModel;
+            taskModel.Import(this, task);
+
+            return taskModel;
         }
 
-        virtual protected ValueModel CreateValueModel()
+        virtual protected ConditionModel CreateConditionModel(ICondition cond)
         {
-            return new ValueModel();
+            ConditionModel condModel = new ConditionModel() { ID = cond.ID, Name = cond.Name };
+            _conditions[cond.ID] = condModel;
+            condModel.Import(this, cond);
+
+            return condModel;
+        }
+
+        virtual protected ValueModel CreateValueModel(IValue val)
+        {
+            ValueModel valModel = new ValueModel() { ID = val.ID, Name = val.Name };
+            _values[val.ID] = valModel;
+            valModel.Import(this, val);
+
+            return valModel;
         }
 
         public IProcess Export()
@@ -303,9 +340,6 @@ namespace Atomic.Loader
             ExportRegistry reg = new ExportRegistry(this);
             IProcess p = reg.Process;
             p.Name = Name;
-
-            ExportEvent(reg, p.StartEvent, StartEvent);
-            ExportEvent(reg, p.StopEvent, StopEvent);
 
             foreach (ConditionModel condModel in Conditions)
             {
@@ -328,16 +362,18 @@ namespace Atomic.Loader
 
         private void ExportEvent(ExportRegistry reg, IEvent evt, EventModel evtModel)
         {
-            evt.Name = StartEvent.Name;
-            evt.StartCondition = reg.GetCondition(evtModel.StartCondition.ID);
-            evt.StopCondition = reg.GetCondition(evtModel.StopCondition.ID);
+            evt.Name = evtModel.Name;
+            //evt.StartCondition = reg.GetCondition(evtModel.StartCondition.ID);
         }
     }
 
     public class EventModel : ElementModel<IEvent>
     {
+        public const string StartEventType = "Start";
+        public const string StopEventType = "Stop";
+
         private RefIdModel _startConditionID;
-        private RefIdModel _stopConditionID;
+        private string _type;
 
         [XmlElement(ElementName = "startOnCondition")]
         public RefIdModel StartCondition
@@ -346,25 +382,31 @@ namespace Atomic.Loader
             set { _startConditionID = value; }
         }
 
-        [XmlElement(ElementName = "stopOnCondition")]
-        public RefIdModel StopCondition
+        [XmlElement(ElementName = "eventType")]
+        public string EventType
         {
-            get { return _stopConditionID; }
-            set { _stopConditionID = value; }
+            get { return _type; }
+            set { _type = value; }
         }
 
         override public void Import(ProcessModel model, IEvent evt)
         {
             base.Import(model, evt);
             StartCondition = CreateConditionReference(model, evt.StartCondition);
-            StopCondition = CreateConditionReference(model, evt.StopCondition);
+            if (evt is StartEvent)
+            {
+                EventType = StartEventType;
+            }
+            else if (evt is StopEvent)
+            {
+                EventType = StopEventType;
+            }
         }
 
         override public IEvent Export(ExportRegistry reg)
         {
             IEvent evt = base.Export(reg);
-            evt.StartCondition = reg.GetCondition(StartCondition.ID);
-            evt.StopCondition = reg.GetCondition(StopCondition.ID);
+            //evt.StartCondition = reg.GetCondition(StartCondition.ID);
 
             return evt;
         }
@@ -457,21 +499,21 @@ namespace Atomic.Loader
         private RefIdModel _stopConditionID;
         private string _runScript;
 
-        [XmlElement(ElementName = "startOnCondition")]
+        [XmlElement(ElementName = "startOnCondition", Namespace = "")]
         public RefIdModel StartCondition
         {
             get { return _startConditionID; }
             set { _startConditionID = value; }
         }
 
-        [XmlElement(ElementName = "stopOnCondition")]
+        [XmlElement(ElementName = "stopOnCondition", Namespace = "")]
         public RefIdModel StopCondition
         {
             get { return _stopConditionID; }
             set { _stopConditionID = value; }
         }
 
-        [XmlElement(ElementName = "runScript")]
+        [XmlElement(ElementName = "runScript", Namespace = "")]
         public string RunScript
         {
             get { if (_runScript == null) _runScript = ""; return _runScript; }
@@ -529,6 +571,9 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "state", Namespace="")]
         public string State { get; set; }
 
+        [XmlElement(ElementName = "conditionType", Namespace = "")]
+        public string ConditionType { get; set; }
+
         override public void Import(ProcessModel model, ICondition cond)
         {
             base.Import(model, cond);
@@ -538,6 +583,7 @@ namespace Atomic.Loader
                 TaskCondition taskCond = (TaskCondition)cond;
                 Task = CreateTaskReference(model, taskCond.Task);
                 State = taskCond.State.ToString();
+                ConditionType = "TaskCondition";
             }
             else if (cond is ValueCondition)
             {
@@ -545,6 +591,12 @@ namespace Atomic.Loader
                 Value = CreateValueReference(model, valCond.Value);
                 ExpectedValue = valCond.ExpectedValue.ToString();
                 Function = CreateFunctionReference(model, valCond.FunctionElement);
+                ConditionType = "ValueCondition";
+            }
+            else
+            {
+                string className = cond.GetType().Name;
+                ConditionType = className.Substring(className.LastIndexOf(".") + 1);
             }
         }
 
@@ -575,6 +627,9 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "compareValue", Namespace="")]
         public RefIdModel CompareValue { get; set; }
 
+        [XmlElement(ElementName = "valueType", Namespace = "")]
+        public string ValueType { get; set; }
+
         override public void Import(ProcessModel model, IValue v)
         {
             base.Import(model, v);
@@ -585,17 +640,25 @@ namespace Atomic.Loader
                 {
                     ICondition cond = ((ConditionMetView)v).Condition;
                     Condition = CreateConditionReference(model, cond);
+                    ValueType = "ConditionMetView";
                 }
                 else if (v is TaskStateView)
                 {
                     IRunnable task = ((TaskStateView)v).Task;
                     Task = CreateTaskReference(model, task);
+                    ValueType = "TaskStateView";
                 }
                 else if (v is ValueModifiedView) 
                 {
                     IValue compareVal = ((ValueModifiedView)v).CompareValue;
                     CompareValue = CreateValueReference(model, compareVal);
+                    ValueType = "ValueModifiedView";
                 }
+            }
+            else
+            {
+                string className = v.GetType().Name;
+                ValueType = className.Substring(className.LastIndexOf(".") + 1);
             }
         }
 

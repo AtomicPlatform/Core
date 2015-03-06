@@ -155,7 +155,7 @@ namespace Atomic.Core
 
         public string AsmName
         {
-            get 
+            get
             {
                 if (_meth == null) return "";
                 return _meth.Module.Assembly.FullName;
@@ -164,7 +164,7 @@ namespace Atomic.Core
 
         public string ModuleName
         {
-            get 
+            get
             {
                 if (_meth == null) return "";
                 return _meth.DeclaringType.Name;
@@ -173,7 +173,7 @@ namespace Atomic.Core
 
         public string MethodName
         {
-            get 
+            get
             {
                 if (_meth == null) return "";
                 return _meth.Name;
@@ -246,7 +246,7 @@ namespace Atomic.Core
 
         private bool _modified = false;
 
-        public bool Modified 
+        public bool Modified
         {
             get { return _modified; }
             private set { _modified = value; }
@@ -257,7 +257,7 @@ namespace Atomic.Core
             get { return _publicValue; }
             set
             {
-                if (Locked) 
+                if (Locked)
                 {
                     Modified = true;
                 }
@@ -309,6 +309,11 @@ namespace Atomic.Core
         {
             return (Value == null) ? 0 : Value.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     abstract public class AtomicView : AtomicValue
@@ -316,54 +321,6 @@ namespace Atomic.Core
         abstract public override object Value
         {
             get;
-        }
-    }
-
-    public class ConditionMetView : AtomicView
-    {
-        private ICondition _condition = Undefined.Condition;
-
-        public ICondition Condition 
-        {
-            get { return _condition; }
-            set { _condition = value; }
-        }
-
-        public override object Value
-        {
-            get { return Condition.Met(); }
-        }
-    }
-
-    public class TaskStateView : AtomicView
-    {
-        private IRunnable _task = Undefined.Task;
-
-        public IRunnable Task 
-        {
-            get { return _task; }
-            set { _task = value; }
-        }
-
-        public override object Value
-        {
-            get { return Task.CurrentState; }
-        }
-    }
-
-    public class ValueModifiedView : AtomicView
-    {
-        private IValue _compareValue = Undefined.Value;
-
-        public IValue CompareValue 
-        {
-            get { return _compareValue; }
-            set { _compareValue = value; }
-        }
-
-        public override object Value
-        {
-            get { return CompareValue.Modified; }
         }
     }
 
@@ -384,233 +341,12 @@ namespace Atomic.Core
             get { return "condition"; }
         }
     }
-    
-    public class StandaloneCondition : AtomicCondition
+
+
+    abstract public class AtomicEvent : AtomicElement, IEvent
     {
-        static public bool DefaultFunction() { return false; }
-        
-        public StandaloneCondition()
-        {
-            Func<bool> func = StandaloneCondition.DefaultFunction;
-            FunctionElement = new AtomicFunction(func.GetMethodInfo());
-        }
-        
-        public override bool Met()
-        {
-            return MetFunction();
-        }
-
-        public Func<bool> MetFunction 
-        {
-            get 
-            {
-                MethodInfo meth = FunctionElement.Method;
-                return (Func<bool>)meth.CreateDelegate(typeof(Func<bool>)); 
-            }
-            set 
-            { 
-                FunctionElement = new AtomicFunction(value.GetMethodInfo());
-            }
-        }
-    }
-
-    public class TaskCondition : AtomicCondition
-    {
-        static public bool DefaultFunction(TaskCondition cond) 
-        {
-            return cond.Task.CurrentState == cond.State;
-        }
-
-        private IRunnable _task = Undefined.Task;
-        private TaskState _state = TaskState.Done;
-        
-        public TaskCondition()
-        {
-            Func<TaskCondition, bool> func = TaskCondition.DefaultFunction;
-            FunctionElement = new AtomicFunction(func.GetMethodInfo());
-        }
-        
-        public override bool Met()
-        {
-            return MetFunction(this);
-        }
-
-        public Func<TaskCondition, bool> MetFunction 
-        {
-            get 
-            {
-                MethodInfo meth = FunctionElement.Method;
-                return (Func<TaskCondition, bool>)meth.CreateDelegate(typeof(Func<TaskCondition, bool>)); 
-            }
-            set 
-            { 
-                FunctionElement = new AtomicFunction(value.GetMethodInfo());
-            }
-        }
-
-        public IRunnable Task 
-        {
-            get { return _task; }
-            set { _task = value; }
-        }
-
-        public TaskState State 
-        { 
-            get { return _state; }
-            set { _state = value; }
-        }
-    }
-
-    public class ValueCondition : AtomicCondition
-    {
-        static public bool DefaultFunction(ValueCondition valCond)
-        {
-            return valCond.Value.Equals(valCond.ExpectedValue);
-        }
-
-        private IValue _value = Undefined.Value;
-        private IValue _expected = Undefined.Value;
-
-        public ValueCondition()
-        {
-            Func<ValueCondition, bool> func = ValueCondition.DefaultFunction;
-            FunctionElement = new AtomicFunction(func.GetMethodInfo());
-        }
-        
-        public override bool Met()
-        {
-            return MetFunction(this);
-        }
-
-        public Func<ValueCondition, bool> MetFunction 
-        {
-            get 
-            {
-                MethodInfo meth = FunctionElement.Method;
-                return (Func<ValueCondition, bool>)meth.CreateDelegate(typeof(Func<ValueCondition, bool>)); 
-            }
-            set 
-            { 
-                FunctionElement = new AtomicFunction(value.GetMethodInfo());
-            }
-        }
-
-        public override string Name
-        {
-            get { return base.Name; }
-            set
-            {
-                base.Name = value;
-                if (FunctionElement != null) FunctionElement.Name = base.Name + "_func";
-            }
-        }
-
-        public IValue Value
-        {
-            get { return _value; }
-            set { _value = value; }
-        }
-
-        public IValue ExpectedValue
-        {
-            get { return _expected; }
-            set { _expected = value; }
-        }
-
-        /*
-        public override bool Met()
-        {
-            return (bool)MetFunction.Method.Invoke(this, new object[] { Value, ExpectedValue });
-        }
-        */
-
-        protected override string ElementName
-        {
-            get { return "function"; }
-        }
-
-//        public Func<ValueCondition, bool> MetFunction { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null) return false;
-            if (obj is ValueCondition)
-            {
-                ValueCondition valCond = (ValueCondition)obj;
-                return valCond.FunctionElement.Equals(FunctionElement)
-                    && valCond.ExpectedValue.Equals(ExpectedValue)
-                    && valCond.Value.Equals(Value);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public override int GetHashCode()
-        {
-            int metHash = (FunctionElement == null) ? 13 : FunctionElement.GetHashCode();
-            int expectedHash = (ExpectedValue == null) ? 1 : ExpectedValue.GetHashCode();
-            int valueHash = (Value == null) ? 1023 : Value.GetHashCode();
-
-            return 17 * metHash + 37 * expectedHash + 3 * valueHash;
-        }
-    }
-
-    public class RuleCondition : AtomicCondition
-    {
-        public RuleCondition()
-        {
-            Conditions = new ICondition[] { };
-            MetFunction = CoreFunctions.AllConditionsMet;
-        }
-
-        public ICondition[] Conditions { get; set; }
-
-        public Func<ICondition[], bool> MetFunction { get; set; }
-
-        public override bool Met()
-        {
-            return MetFunction(Conditions);
-        }
-    }
-
-    public class SequencedCondition : AtomicCondition
-    {
-        public SequencedCondition()
-        {
-            Conditions = new ICondition[] { };
-            MetFunction = CoreFunctions.DefaultMetFunction;
-        }
-
-        private int currentIndex = 0;
-
-        public ICondition[] Conditions { get; set; }
-
-        public Func<ICondition, bool> MetFunction { get; set; }
-
-        public override bool Met()
-        {
-            if (Conditions.Length == 0) return true;
-
-            bool conditionMet = MetFunction(Conditions[currentIndex]);
-            if (conditionMet)
-            {
-                currentIndex++;
-            }
-            else
-            {
-                currentIndex = 0;
-            }
-
-            return (currentIndex == Conditions.Length);
-        }
-    }
-
-    public class AtomicEvent : AtomicElement, IEvent
-    {
-        private ICondition _startCondition = Undefined.Condition;
-        private ICondition _stopCondition = Undefined.Condition;
+        private ICondition _condition = Undefined.Condition;
+        private IProcess _process = null;
 
         public AtomicEvent()
         {
@@ -622,22 +358,25 @@ namespace Atomic.Core
             set
             {
                 StartCondition.Locked = value;
-                StopCondition.Locked = value;
 
                 base.Locked = value;
             }
         }
 
-        public ICondition StartCondition 
+        public IProcess Process
         {
-            get { return _startCondition; }
-            set { _startCondition = value; }
+            get { return _process; }
+            set
+            {
+                _process = value;
+                InitializeStartCondition();
+            }
         }
 
-        public ICondition StopCondition
+        virtual public ICondition StartCondition
         {
-            get { return _stopCondition; }
-            set { _stopCondition = value; }
+            get { return _condition; }
+            protected set { _condition = value; }
         }
 
         protected override string ElementName
@@ -645,14 +384,15 @@ namespace Atomic.Core
             get { return "event"; }
         }
 
+        abstract protected void InitializeStartCondition();
+
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
             if (obj is AtomicEvent)
             {
                 AtomicEvent evt = (AtomicEvent)obj;
-                return evt.StartCondition.Equals(StartCondition)
-                    && evt.StopCondition.Equals(StopCondition);
+                return evt.StartCondition.Equals(StartCondition);
             }
             else
             {
@@ -663,9 +403,8 @@ namespace Atomic.Core
         public override int GetHashCode()
         {
             int startHash = (StartCondition == null) ? 1 : StartCondition.GetHashCode();
-            int stopHash = (StopCondition == null) ? 5 : StopCondition.GetHashCode();
 
-            return 17 * startHash + 37 * stopHash;
+            return 17 * startHash;
         }
     }
 
@@ -685,7 +424,7 @@ namespace Atomic.Core
             }
         }
 
-        public TaskFunction RunFunction 
+        public TaskFunction RunFunction
         {
             get { return _func; }
             set { _func = value; }
@@ -706,10 +445,10 @@ namespace Atomic.Core
         private ICondition _stopCondition = Undefined.Condition;
         private string _funcText = "";
 
-        public ICondition StartCondition 
+        public ICondition StartCondition
         {
             get { return _startCondition; }
-            set { _startCondition = value; } 
+            set { _startCondition = value; }
         }
 
         public ICondition StopCondition
@@ -731,9 +470,10 @@ namespace Atomic.Core
             RunFunction = CoreFunctions.DefaultRunFunction;
         }
 
-        public string FunctionText {
+        public string FunctionText
+        {
             get { return _funcText; }
-            set { _funcText = value; } 
+            set { _funcText = value; }
         }
 
         override public void Run()
@@ -834,112 +574,51 @@ namespace Atomic.Core
 
     public class AtomicProcess : AtomicRunnable, IProcess
     {
-        private IEvent _startEvent = new AtomicEvent();
-        private IEvent _startEventDefault = new AtomicEvent();
-        private IEvent _stopEvent = new AtomicEvent();
-        private IEvent _stopEventDefault = new AtomicEvent();
+        private StartEvent _startEvent = new StartEvent();
+        private StopEvent _stopEvent = new StopEvent();
 
         private List<IEvent> _events = new List<IEvent>();
         private List<ITask> _tasks = new List<ITask>();
 
+        private ICondition _doneCondition = Undefined.Condition;
+
         public AtomicProcess()
         {
-            InitializeStartEvent(StartEvent);
-            InitializeStartEvent(DefaultStartEvent);
-
-            InitializeStopEvent(StopEvent);
-            InitializeStopEvent(DefaultStopEvent);
+            _startEvent.Process = this;
+            _stopEvent.Process = this;
         }
 
-        private void InitializeStartEvent(IEvent evt)
-        {
-            evt.Name = "_start";
-            IValue startView = new TaskStateView() 
-            { 
-                Task = this, 
-                Name = "_startEvent_startView" 
-            };
-
-            evt.StartCondition = new ValueCondition()
-            {
-                Name = "_startEvent_start",
-                Value = startView,
-                ExpectedValue = new AtomicValue() { Value = TaskState.Ready }
-            };
-
-            evt.StopCondition = new ValueCondition()
-            {
-                Name = "_startEvent_stop",
-                Value = new TaskStateView() { Task = this, Name = "_startEvent_stopView" },
-                ExpectedValue = new AtomicValue() { Value = TaskState.Active }
-            };
-        }
-
-        private void InitializeStopEvent(IEvent evt)
-        {
-            evt.Name = "_stop";
-            IValue startView = new TaskStateView()
-            {
-                Task = this,
-                Name = "_stopEvent_startView"
-            };
-
-            evt.StartCondition = new ValueCondition()
-            {
-                Name = "_stopEvent_start",
-                Value = startView,
-                ExpectedValue = new AtomicValue() { Value = TaskState.Running }
-            };
-
-            evt.StopCondition = new ValueCondition()
-            {
-                Name = "_stopEvent_stop",
-                Value = new TaskStateView() { Task = this, Name = "_startEvent_stopView" },
-                ExpectedValue = new AtomicValue() { Value = TaskState.RunComplete }
-            };
-        }
-
-        public IEvent StartEvent 
+        public IEvent StartEvent
         {
             get { return _startEvent; }
-            private set { _startEvent = value; }
-        }
-
-        public IEvent DefaultStartEvent
-        {
-            get { return _startEventDefault; }
-            private set { _startEventDefault = value; }
         }
 
         public IEvent StopEvent
         {
             get { return _stopEvent; }
-            private set { _stopEvent = value; }
         }
 
-        public IEvent DefaultStopEvent
-        {
-            get { return _stopEventDefault; }
-            private set { _stopEventDefault = value; }
-        }
-
-        public IEvent[] Events 
+        public IEvent[] Events
         {
             get { return _events.ToArray(); }
-            set 
-            { 
-                _events.Clear(); 
-                _events.AddRange(value); 
+            set
+            {
+                _events.Clear();
+                foreach (IEvent evt in value)
+                {
+                    _events.Add(evt);
+                    evt.Process = this;
+                }
             }
         }
 
         public ITask[] Tasks
         {
             get { return _tasks.ToArray(); }
-            set 
-            { 
-                _tasks.Clear(); 
-                _tasks.AddRange(value); 
+            set
+            {
+                _tasks.Clear();
+                _tasks.AddRange(value);
             }
         }
 
@@ -970,13 +649,6 @@ namespace Atomic.Core
                 case TaskState.Ready:
                     if (StartEvent.StartCondition.Met())
                     {
-                        CurrentState = TaskState.Active;
-                        StartEvent.Update();
-                    }
-                    break;
-                case TaskState.Active:
-                    if (StartEvent.StopCondition.Met())
-                    {
                         CurrentState = TaskState.Running;
                         StartEvent.Update();
                     }
@@ -994,16 +666,19 @@ namespace Atomic.Core
                     }
                     break;
                 case TaskState.RunComplete:
-                case TaskState.Stopping:
-                    if (StopEvent.StopCondition.Met())
-                    {
-                        CurrentState = TaskState.Done;
-                    }
-                    else
-                    {
-                        CurrentState = TaskState.Stopping;
-                    }
+                    CurrentState = TaskState.Done;
                     break;
+            }
+        }
+
+        public ICondition DoneCondition
+        {
+            get { return _doneCondition; }
+            set 
+            { 
+                _doneCondition = value;
+                _doneCondition.Name = "_done";
+                ((StopEvent)StopEvent).UpdateCondition(_doneCondition);
             }
         }
 

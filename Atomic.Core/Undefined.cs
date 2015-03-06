@@ -103,9 +103,9 @@ namespace Atomic.Core
             set { }
         }
 
-        public ICondition StopCondition
+        public IProcess Process
         {
-            get { return Undefined.Condition; }
+            get { return null; }
             set { }
         }
     }

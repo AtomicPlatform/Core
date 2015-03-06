@@ -65,8 +65,11 @@ namespace Atomic.Core
         ICondition StopCondition { get; set; }
     }
 
-    public interface IEvent : IElement, IStartable
+    public interface IEvent : IElement
     {
+        IProcess Process { get; set; }
+
+        ICondition StartCondition { get; }
     }
 
     public interface ITask : IRunnable, IStartable
@@ -94,9 +97,7 @@ namespace Atomic.Core
 
         ITask[] Tasks { get; set; }
 
-        IEvent DefaultStartEvent { get; }
-
-        IEvent DefaultStopEvent { get; }
+        ICondition DoneCondition { get; set; }
     }
 
     public interface IMessage : IElement

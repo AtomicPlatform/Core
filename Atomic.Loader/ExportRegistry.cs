@@ -22,10 +22,22 @@ namespace Atomic.Loader
         public ExportRegistry(IProcessModel model)
         {
             _process[model.ID] = new AtomicProcess();
+            IEvent evt = null;
 
             foreach (EventModel evtModel in model.Events)
             {
-                _events.Add(evtModel.ID, new AtomicEvent());
+                switch (evtModel.EventType) {
+                    case EventModel.StartEventType:
+                        evt = new StartEvent();
+                        break;
+                    case EventModel.StopEventType:
+                        evt = new StopEvent();
+                        break;
+                    default:
+                        break;
+                }
+
+                if (evt != null) _events.Add(evtModel.ID, evt);
             }
 
             foreach (TaskModel taskModel in model.Tasks)

@@ -1,0 +1,7 @@
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Release\Atomic.Loader.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Release\Atomic.Loader.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Release\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\bin\Release\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\obj\Release\Atomic.Loader.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\obj\Release\Atomic.Loader.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Loader\obj\Release\Atomic.Loader.pdb

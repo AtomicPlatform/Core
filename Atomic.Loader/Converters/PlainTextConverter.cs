@@ -10,12 +10,10 @@ namespace Atomic.Loader
 {
     public class PlainTextConverter : IDataConverter
     {
-        private static string ProcessTemplateText = "define process with name \"$ID\"";
-        private static string EventTemplateText = "add event with name \"$ID\" start on condition \"$StartCondition.ID\" stop on condition \"$StopCondition.ID\" ";
-        private static string ConditionTemplateText = "add condition with name \"$ID\" when ";
-        private static string TaskConditionTemplateText = "task \"$Task.ID\" is \"$State\"";
-        private static string TaskTemplateText = "";
-        private static string ValueTemplateText = "";
+        private static string ProcessTemplateText = "define process with name \"$ID\" ";
+        private static string AddTemplateText = "add $elementType with name \"$ID\" ";
+        private static string TaskStateMetText = "when task \"$Task.ID\" state is \"$State\" ";
+        private static string ValueMetText = "when value \"$Value.ID\" is \"$ExpectedValue\" ";
 
         private IProcessModel _model = new ProcessModel();
 
@@ -69,69 +67,118 @@ namespace Atomic.Loader
         public string Export()
         {
             StringBuilder buffer = new StringBuilder();
-            buffer.AppendLine(ProcessTemplateText.Replace("$ID", Model.Name));
+            WriteText(buffer, ProcessTemplateText.Replace("$ID", Model.Name), 0, true);
 
-            if (Model.StartEvent != null)
-            {
-                buffer.AppendLine(EventTemplateText
-                    .Replace("$ID", Model.StartEvent.Name)
-                    .Replace("$StartCondition.ID", Model.StartEvent.StartCondition.ID)
-                    .Replace("$StopCondition.ID", Model.StartEvent.StopCondition.ID)
-                );
-            }
-
-            if (Model.StopEvent != null)
-            {
-                buffer.AppendLine(EventTemplateText
-                    .Replace("$ID", Model.StopEvent.Name)
-                    .Replace("$StartCondition.ID", Model.StopEvent.StartCondition.ID)
-                    .Replace("$StopCondition.ID", Model.StopEvent.StopCondition.ID)
-                );
-            }
-
+            /*
             foreach (EventModel evtModel in Model.Events)
             {
-                buffer.AppendLine(EventTemplateText
+                buffer.AppendLine(AddTemplateText
+                    .Replace("$ID", evtModel.Name)
+                    .Replace("$elementType", "event")
+                );
+
+                switch (evtModel.EventType)
+                {
+                    case 
+                }
+                buffer.AppendLine(StartConditionTemplateText
                     .Replace("$ID", evtModel.Name)
                     .Replace("$StartCondition.ID", evtModel.StartCondition.ID)
-                    .Replace("$StopCondition.ID", evtModel.StopCondition.ID)
                 );
             }
+            */
 
             foreach (TaskModel taskModel in Model.Tasks)
             {
-                buffer.AppendLine(TaskTemplateText
-                );
+                string line = AddTemplateText
+                    .Replace("$elementType", "task")
+                    .Replace("$ID", taskModel.Name);
+
+                WriteText(buffer, line, 1, true);
+
+                if (taskModel.StartCondition != null)
+                {
+                    WriteConditionText(buffer, "start", taskModel.StartCondition, 2);
+                }
+
+                if (taskModel.StopCondition != null)
+                {
+                    WriteConditionText(buffer, "end", taskModel.StopCondition, 2);
+                }
+
+                WriteText(buffer, taskModel.RunScript, 2, true);
             }
 
-            foreach (ConditionModel condModel in Model.Conditions)
-            {
-                buffer.Append(ConditionTemplateText
-                    .Replace("$ID", condModel.Name)
-                );
+            ConditionModel doneModel = Model.Conditions.Where(x => x.ID == "_done").First();
+            RefIdModel doneRefModel = new RefIdModel() { ID = doneModel.ID };
+            WriteConditionText(buffer, "end", doneRefModel, 0);
 
-                if (condModel.Task != null) {
-                    buffer.AppendLine(TaskConditionTemplateText
-                        .Replace("$Task.ID", condModel.Task.ID)
-                        .Replace("$State", condModel.State.ToString())
-                    );
+            return buffer.ToString();
+        }
+
+        private void WriteConditionText(StringBuilder buffer, string mode, RefIdModel idModel, int indent)
+        {
+            string line = mode + " ";
+            ConditionModel condModel = Model.Conditions.Where(x => x.ID == idModel.ID).FirstOrDefault();
+            if (condModel != null)
+            {
+                switch (condModel.ConditionType)
+                {
+                    case "TaskCondition":
+                        line += TaskStateMetText
+                            .Replace("$Task.ID", condModel.Task.ID)
+                            .Replace("$State", condModel.State);
+                        break;
+                    case "ValueCondition":
+                        line += GetValueText(condModel.Value, condModel.ExpectedValue);
+
+                        break;
+                    default:
+                        break;
+                }
+
+                WriteText(buffer, line, indent, true);
+            }
+        }
+
+        private string GetValueText(RefIdModel valueRefID, string expectedValue)
+        {
+            ValueModel valModel = Model.Values.Where(x => x.ID == valueRefID.ID).FirstOrDefault();
+            string line = "";
+            if (valModel != null)
+            {
+                switch (valModel.ValueType)
+                {
+                    case "TaskStateView":
+                        line = TaskStateMetText
+                            .Replace("$Task.ID", valModel.Task.ID)
+                            .Replace("$State", expectedValue);
+                        break;
+                    case "ConditionMetView":
+                        break;
+                    case "ValueModifiedView":
+                        break;
+                    default:
+                         line += ValueMetText
+                            .Replace("$Value.ID", valModel.ID)
+                            .Replace("$ExpectedValue", expectedValue);
+                       break;
                 }
             }
 
-            foreach (ValueModel valueModel in Model.Values)
+            return line;
+        }
+
+        private void WriteText(StringBuilder buffer, string line, int indent, bool eol)
+        {
+            for (int i = 0; i < indent; i++)
             {
-                buffer.AppendLine(ValueTemplateText
-                );
+                buffer.Append("    ");
             }
 
-            foreach (FunctionModel funcModel in Model.Functions)
-            {
+            buffer.Append(line);
 
-            }
-
-            buffer.AppendLine("end");
-
-            return buffer.ToString();
+            if (eol) buffer.AppendLine();
         }
 
         public IProcessModel Model
