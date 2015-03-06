@@ -67,7 +67,10 @@ namespace Atomic.Core
 
     class UndefinedCondition : UndefinedElement, ICondition 
     {
-        public bool Met() { return false; }
+        public bool Met 
+        { 
+            get { return false; } 
+        }
     }
 
     class UndefinedFunction : UndefinedElement, IFunction
@@ -122,9 +125,9 @@ namespace Atomic.Core
 
         public void Run() {}
 
-        public TaskState CurrentState
+        public RunState CurrentState
         {
-            get { return TaskState.Done; }
+            get { return RunState.Done; }
         }
 
         public TaskFunction RunFunction

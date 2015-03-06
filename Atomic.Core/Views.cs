@@ -19,7 +19,7 @@ namespace Atomic.Core
 
         public override object Value
         {
-            get { return Condition.Met(); }
+            get { return Condition.Met; }
         }
     }
 

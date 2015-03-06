@@ -19,9 +19,9 @@ namespace Atomic.Core
             FunctionElement = new AtomicFunction(func.GetMethodInfo());
         }
 
-        public override bool Met()
+        public override bool Met
         {
-            return MetFunction();
+            get { return MetFunction(); }
         }
 
         public Func<bool> MetFunction
@@ -46,7 +46,7 @@ namespace Atomic.Core
         }
 
         private IRunnable _task = Undefined.Task;
-        private TaskState _state = TaskState.Done;
+        private RunState _state = RunState.Done;
 
         public TaskCondition()
         {
@@ -54,9 +54,9 @@ namespace Atomic.Core
             FunctionElement = new AtomicFunction(func.GetMethodInfo());
         }
 
-        public override bool Met()
+        public override bool Met
         {
-            return MetFunction(this);
+            get { return MetFunction(this); }
         }
 
         public Func<TaskCondition, bool> MetFunction
@@ -78,7 +78,7 @@ namespace Atomic.Core
             set { _task = value; }
         }
 
-        public TaskState State
+        public RunState State
         {
             get { return _state; }
             set { _state = value; }
@@ -101,9 +101,9 @@ namespace Atomic.Core
             FunctionElement = new AtomicFunction(func.GetMethodInfo());
         }
 
-        public override bool Met()
+        public override bool Met
         {
-            return MetFunction(this);
+            get { return MetFunction(this); }
         }
 
         public Func<ValueCondition, bool> MetFunction
@@ -193,9 +193,9 @@ namespace Atomic.Core
 
         public Func<ICondition[], bool> MetFunction { get; set; }
 
-        public override bool Met()
+        public override bool Met
         {
-            return MetFunction(Conditions);
+            get { return MetFunction(Conditions); }
         }
     }
 
@@ -213,21 +213,24 @@ namespace Atomic.Core
 
         public Func<ICondition, bool> MetFunction { get; set; }
 
-        public override bool Met()
+        public override bool Met
         {
-            if (Conditions.Length == 0) return true;
-
-            bool conditionMet = MetFunction(Conditions[currentIndex]);
-            if (conditionMet)
+            get
             {
-                currentIndex++;
-            }
-            else
-            {
-                currentIndex = 0;
-            }
+                if (Conditions.Length == 0) return true;
 
-            return (currentIndex == Conditions.Length);
+                bool conditionMet = MetFunction(Conditions[currentIndex]);
+                if (conditionMet)
+                {
+                    currentIndex++;
+                }
+                else
+                {
+                    currentIndex = 0;
+                }
+
+                return (currentIndex == Conditions.Length);
+            }
         }
     }
 }

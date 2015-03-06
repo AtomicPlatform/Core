@@ -18,7 +18,7 @@ namespace Atomic.Core
             StartCondition = new ValueCondition()
             {
                 Value = new TaskStateView() { Task = Process },
-                ExpectedValue = new AtomicValue() { Value = TaskState.Ready }
+                ExpectedValue = new AtomicValue() { Value = RunState.Ready }
             };
         }
     }

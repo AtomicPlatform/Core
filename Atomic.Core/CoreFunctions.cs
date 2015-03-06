@@ -35,12 +35,12 @@ namespace Atomic.Core
 
         static public bool TaskRunCompleted(IRunnable task)
         {
-            return task.CurrentState == TaskState.RunComplete;
+            return task.CurrentState == RunState.RunComplete;
         }
 
         static public bool TaskDone(ITask task)
         {
-            return task.CurrentState == TaskState.Done;
+            return task.CurrentState == RunState.Done;
         }
 
         static public bool AllConditionsMet(ICondition[] conditions)
@@ -49,7 +49,7 @@ namespace Atomic.Core
 
             foreach (ICondition c in conditions)
             {
-                met &= c.Met();
+                met &= c.Met;
             }
 
             return met;
@@ -62,7 +62,7 @@ namespace Atomic.Core
 
             foreach (ICondition c in conditions)
             {
-                met |= c.Met();
+                met |= c.Met;
             }
 
             return met;

@@ -53,7 +53,7 @@ namespace Atomic.Core
                 foreach (IProcess p in ProcessList)
                 {
                     if (DebugMode) WriteDebugMessage("Process {" + p.Name + "}, CurrentState = " + p.CurrentState.ToString());
-                    if (p.CurrentState == TaskState.Running)
+                    if (p.CurrentState == RunState.Running)
                     {
                         activeTasks.AddRange(p.Tasks);
                     }
@@ -64,8 +64,8 @@ namespace Atomic.Core
                 {
                     foreach (IValue v in task.Values) v.Update();
 
-                    if (task.CurrentState == TaskState.Running
-                        || task.CurrentState == TaskState.RunComplete)
+                    if (task.CurrentState == RunState.Running
+                        || task.CurrentState == RunState.RunComplete)
                     {
                         ExecuteFunction(task.FunctionText);
                     }
@@ -80,7 +80,7 @@ namespace Atomic.Core
 
                 // filter out completed tasks
                 List<IProcess> activeList = new List<IProcess>();
-                activeList.AddRange(ProcessList.Where(x => x.CurrentState != TaskState.Done));
+                activeList.AddRange(ProcessList.Where(x => x.CurrentState != RunState.Done));
                 ProcessList = activeList.ToArray();
 
                 done = (ProcessList.Length == 0);
@@ -224,6 +224,7 @@ namespace Atomic.Core
         }
     }
 
+    /*
     public class AtomicMessage : AtomicElement, IMessage
     {
         private List<IValue> _values = new List<IValue>();
@@ -238,6 +239,7 @@ namespace Atomic.Core
             }
         }
     }
+    */
 
     public class AtomicValue : AtomicElement, IValue
     {
@@ -334,7 +336,7 @@ namespace Atomic.Core
             set { _funcObj = value; }
         }
 
-        abstract public bool Met();
+        abstract public bool Met { get; }
 
         protected override string ElementName
         {
@@ -412,7 +414,7 @@ namespace Atomic.Core
     {
         private List<IValue> _values = new List<IValue>();
         private TaskFunction _func = CoreFunctions.DefaultRunFunction;
-        private TaskState _state = TaskState.Ready;
+        private RunState _state = RunState.Ready;
 
         public IValue[] Values
         {
@@ -430,7 +432,7 @@ namespace Atomic.Core
             set { _func = value; }
         }
 
-        public TaskState CurrentState
+        public RunState CurrentState
         {
             get { return _state; }
             set { _state = value; }
@@ -459,7 +461,7 @@ namespace Atomic.Core
 
         public AtomicTask()
         {
-            TaskCondition taskCond = new TaskCondition() { Task = this, State = TaskState.RunComplete };
+            TaskCondition taskCond = new TaskCondition() { Task = this, State = RunState.RunComplete };
             StopCondition = taskCond;
 
             StartCondition = new StandaloneCondition()
@@ -485,8 +487,8 @@ namespace Atomic.Core
 
             switch (CurrentState)
             {
-                case TaskState.Running:
-                case TaskState.RunComplete:
+                case RunState.Running:
+                case RunState.RunComplete:
                     RunFunction(this);
                     break;
             }
@@ -496,23 +498,23 @@ namespace Atomic.Core
         {
             switch (CurrentState)
             {
-                case TaskState.Ready:
-                    if (StartCondition == null || StartCondition.Met())
+                case RunState.Ready:
+                    if (StartCondition == null || StartCondition.Met)
                     {
-                        CurrentState = TaskState.Running;
+                        CurrentState = RunState.Running;
                     }
                     break;
-                case TaskState.Running:
-                case TaskState.RunComplete:
-                    CurrentState = TaskState.RunComplete;
+                case RunState.Running:
+                case RunState.RunComplete:
+                    CurrentState = RunState.RunComplete;
 
-                    if (StopCondition.Met())
+                    if (StopCondition.Met)
                     {
-                        CurrentState = TaskState.Done;
+                        CurrentState = RunState.Done;
                     }
                     break;
-                case TaskState.Done:
-                    CurrentState = TaskState.Ready;
+                case RunState.Done:
+                    CurrentState = RunState.Ready;
                     break;
             }
         }
@@ -646,27 +648,27 @@ namespace Atomic.Core
         {
             switch (CurrentState)
             {
-                case TaskState.Ready:
-                    if (StartEvent.StartCondition.Met())
+                case RunState.Ready:
+                    if (StartEvent.StartCondition.Met)
                     {
-                        CurrentState = TaskState.Running;
+                        CurrentState = RunState.Running;
                         StartEvent.Update();
                     }
                     break;
-                case TaskState.Running:
+                case RunState.Running:
                     foreach (ITask task in Tasks)
                     {
                         task.Update();
                     }
 
-                    if (StopEvent.StartCondition.Met())
+                    if (StopEvent.StartCondition.Met)
                     {
-                        CurrentState = TaskState.RunComplete;
+                        CurrentState = RunState.RunComplete;
                         StopEvent.Update();
                     }
                     break;
-                case TaskState.RunComplete:
-                    CurrentState = TaskState.Done;
+                case RunState.RunComplete:
+                    CurrentState = RunState.Done;
                     break;
             }
         }

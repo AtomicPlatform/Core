@@ -356,7 +356,7 @@ namespace Atomic.Loader
             {
                 TaskCondition taskCond = (TaskCondition)cond;
                 taskCond.Task = reg.GetTask(condModel.Task.ID);
-                taskCond.State = (Atomic.Core.TaskState)Enum.Parse(typeof(Atomic.Core.TaskState), condModel.State.ToString());
+                taskCond.State = (Atomic.Core.RunState)Enum.Parse(typeof(Atomic.Core.RunState), condModel.State.ToString());
             }
         }
 
@@ -544,11 +544,11 @@ namespace Atomic.Loader
             return (ITask)reg.GetTask(ID);
         }
 
-        static internal TaskState GetState(Atomic.Core.TaskState taskState)
+        static internal RunState GetState(Atomic.Core.RunState taskState)
         {
-            TaskState modelState;
+            RunState modelState;
 
-            Enum.TryParse<TaskState>(Enum.GetName(typeof(Atomic.Core.TaskState), taskState), true, out modelState);
+            Enum.TryParse<RunState>(Enum.GetName(typeof(Atomic.Core.RunState), taskState), true, out modelState);
 
             return modelState;
         }
