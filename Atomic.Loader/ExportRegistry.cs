@@ -1,10 +1,6 @@
-﻿using System;
+﻿using Atomic.Core;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Atomic.Core;
 
 namespace Atomic.Loader
 {
@@ -18,7 +14,14 @@ namespace Atomic.Loader
 
         private IDictionary<string, IProcess> _process = new Dictionary<string, IProcess>();
 
-        // improve this to evaluate the model to create the correct object type
+        /// <summary>
+        /// Creates a collection of core elements based on the definitions contained in 
+        /// the specified process model.
+        /// </summary>
+        /// <param name="model">
+        ///     The process model containing all the element models
+        ///     needed for a process element.
+        /// </param>
         public ExportRegistry(IProcessModel model)
         {
             _process[model.ID] = new AtomicProcess();
@@ -57,20 +60,33 @@ namespace Atomic.Loader
 
             foreach (FunctionModel funcModel in model.Functions)
             {
-                _values.Add(funcModel.ID, new AtomicValue());
+                _functions.Add(funcModel.ID, new AtomicFunction());
             }
         }
 
+        /// <summary>
+        /// The process element contained in the registry.
+        /// </summary>
         public IProcess Process
         {
             get { return _process.Values.First(); }
         }
 
+        /// <summary>
+        /// Returns the event element with the corresponding identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the event element.</param>
+        /// <returns>The event element with the specified identifier.</returns>
         public IEvent GetEvent(string id)
         {
             return null;
         }
 
+        /// <summary>
+        /// Returns the task element with the corresponding identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the task element.</param>
+        /// <returns>The task element with the specified identifier.</returns>
         public IRunnable GetTask(string id)
         {
             if (_process.ContainsKey(id))
@@ -81,20 +97,34 @@ namespace Atomic.Loader
             return null;
         }
 
+        /// <summary>
+        /// Returns the condition element with the corresponding identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the condition element.</param>
+        /// <returns>The condition element with the specified identifier.</returns>
         public ICondition GetCondition(string id)
         {
             return _conditions[id];
         }
 
+        /// <summary>
+        /// Returns the value element with the corresponding identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the value element.</param>
+        /// <returns>The value element with the specified identifier.</returns>
         public IValue GetValue(string id)
         {
             return _values[id];
         }
 
+        /// <summary>
+        /// Returns the function element with the corresponding identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the function element.</param>
+        /// <returns>The function element with the specified identifier.</returns>
         public IFunction GetFunction(string id)
         {
             return _functions[id];
         }
-
     }
 }
