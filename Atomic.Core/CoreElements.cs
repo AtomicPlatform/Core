@@ -105,6 +105,7 @@ namespace Atomic.Core
 
         static public string GenerateID(string name)
         {
+            if (name == null) name = "";
             return name.Trim().ToLower().Replace(' ', '_');
         }
 
@@ -121,7 +122,10 @@ namespace Atomic.Core
         virtual public bool Locked
         {
             get { return _locked; }
-            set { _locked = value; }
+            set 
+            {
+                if (IsValid) _locked = value; 
+            }
         }
 
         virtual public void Update() { }
@@ -131,6 +135,12 @@ namespace Atomic.Core
             get { return _name; }
             set
             {
+                if (Locked) return;
+
+                if (value == null) value = "";
+                value = value.Trim();
+                if (value.Length == 0) value = ElementName + GetHashCode();
+
                 _name = value;
                 _id = GenerateID(_name);
             }
@@ -139,6 +149,11 @@ namespace Atomic.Core
         virtual protected string ElementName
         {
             get { return "element"; }
+        }
+
+        virtual protected bool IsValid
+        {
+            get { return true; }
         }
     }
 
@@ -150,7 +165,16 @@ namespace Atomic.Core
 
         public AtomicFunction(MethodInfo meth)
         {
-            _meth = meth;
+            if (meth == null) return;
+
+            if (meth.IsStatic && meth.IsPublic)
+            {
+                _meth = meth;
+            }
+            else
+            {
+                _meth = null;
+            }
         }
 
         public string AsmName
@@ -182,12 +206,44 @@ namespace Atomic.Core
 
         public void SetProperties(string assemblyName, string moduleName, string methodName)
         {
-            // validate parameters
-            AssemblyName asmNM = new AssemblyName(assemblyName);
-            Assembly asm = Assembly.Load(asmNM);
+            if (assemblyName == null || moduleName == null || methodName == null)
+            {
+                _meth = null;
+                return;
+            }
 
-            TypeInfo info = asm.DefinedTypes.Where(x => x.Name == ModuleName).FirstOrDefault();
-            MethodInfo meth = info.DeclaredMethods.Where(x => x.Name == MethodName).FirstOrDefault();
+            // validate parameters
+            AssemblyName asmNM = null;
+            try
+            {
+                asmNM = new AssemblyName(assemblyName);
+            }
+            catch (Exception)
+            {
+                _meth = null;
+                return;
+            }
+
+            Assembly asm = null;
+
+            try
+            {
+                asm = Assembly.Load(asmNM);
+            }
+            catch (Exception)
+            {
+                _meth = null;
+                return;
+            }
+
+            TypeInfo info = asm.DefinedTypes.Where(x => x.Name == moduleName).FirstOrDefault();
+            if (info == null)
+            {
+                _meth = null;
+                return;
+            }
+
+            MethodInfo meth = info.DeclaredMethods.Where(x => x.Name == methodName).FirstOrDefault();
 
             _meth = meth;
         }
@@ -205,9 +261,9 @@ namespace Atomic.Core
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
-            if (obj is AtomicFunction)
+            if (obj is IFunction)
             {
-                AtomicFunction func = (AtomicFunction)obj;
+                IFunction func = (IFunction)obj;
                 return func.AsmName.Equals(AsmName)
                     && func.MethodName.Equals(MethodName)
                     && func.ModuleName.Equals(ModuleName);

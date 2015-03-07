@@ -52,6 +52,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Core\ElementTests.cs" />
+    <Compile Include="Core\FunctionTests.cs" />
     <Compile Include="Loader\JsonConverterTests.cs" />
     <Compile Include="Loader\XmlConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,9 +68,7 @@
       <Name>Atomic.Loader</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\" />
-  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
