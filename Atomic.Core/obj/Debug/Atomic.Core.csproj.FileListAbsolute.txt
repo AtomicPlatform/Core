@@ -12,3 +12,4 @@ C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\bin\Debug\Atomic.Core.pdb
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.dll
 C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.Core\obj\Debug\Atomic.Core.csprojResolveAssemblyReference.cache

@@ -13,6 +13,8 @@ namespace Atomic.Core
         static private IEvent _event = new UndefinedEvent();
         static private ITask _task = new UndefinedTask();
         static private IValue _value = new UndefinedValue();
+        static private IMessage _message = new UndefinedMessage();
+        static private IParameter _param = new UndefinedParameter();
 
         static public ICondition Condition
         {
@@ -27,6 +29,16 @@ namespace Atomic.Core
         static public IFunction Function
         {
             get { return _function; }
+        }
+
+        static public IMessage Message
+        {
+            get { return _message; }
+        }
+
+        static public IParameter Parameter
+        {
+            get { return _param; }
         }
 
         static public ITask Task
@@ -62,6 +74,11 @@ namespace Atomic.Core
         {
             get { return true; }
             set { }
+        }
+
+        public bool IsValid
+        {
+            get { return false; }
         }
     }
 
@@ -113,6 +130,37 @@ namespace Atomic.Core
         }
     }
 
+    class UndefinedMessage : UndefinedElement, IMessage
+    {
+        private string[] _params = new string[0];
+
+        public IParameter GetParameter(string name)
+        {
+            return Undefined.Parameter;
+        }
+
+        public string[] ParameterNames
+        {
+            get { return _params; }
+        }
+    }
+
+    class UndefinedParameter : UndefinedValue, IParameter
+    {
+
+        public bool InputParameter
+        {
+            get { return true; }
+            set {}
+        }
+
+        public bool Required
+        {
+            get { return false; }
+            set {}
+        }
+    }
+
     class UndefinedTask : UndefinedElement, ITask
     {
         static public void DefaultRunFunction(IRunnable task) { }
@@ -142,6 +190,10 @@ namespace Atomic.Core
             set { }
         }
 
+        public IValue GetValue(string name)
+        {
+            return Undefined.Value;
+        }
         public ICondition StartCondition
         {
             get { return Undefined.Condition; }
@@ -152,6 +204,11 @@ namespace Atomic.Core
         {
             get { return Undefined.Condition; }
             set { }
+        }
+
+        public IValue RunResult
+        {
+            get { return Undefined.Value; }
         }
     }
 

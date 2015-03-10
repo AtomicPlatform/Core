@@ -1,0 +1,9 @@
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.UnitTests.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.UnitTests.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.Core.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.Loader.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.Core.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\bin\Release\Atomic.Loader.pdb
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Release\Atomic.UnitTests.csprojResolveAssemblyReference.cache
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Release\Atomic.UnitTests.dll
+C:\Projects\GitHub\AtomicPlatform\Core\Source\Atomic.UnitTests\obj\Release\Atomic.UnitTests.pdb

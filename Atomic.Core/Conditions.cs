@@ -92,6 +92,11 @@ namespace Atomic.Core
             return valCond.Value.Equals(valCond.ExpectedValue);
         }
 
+        static public bool NotEqualsFunction(ValueCondition valCond)
+        {
+            return !EqualsFunction(valCond);
+        }
+
         private IValue _value = Undefined.Value;
         private IValue _expected = Undefined.Value;
 
@@ -183,10 +188,36 @@ namespace Atomic.Core
 
     public class RuleCondition : AtomicCondition
     {
+
+        static public bool AllConditionsMet(ICondition[] conditions)
+        {
+            bool met = true;
+
+            foreach (ICondition c in conditions)
+            {
+                met &= c.Met;
+            }
+
+            return met;
+        }
+
+        static public bool AnyConditionMet(ICondition[] conditions)
+        {
+            bool met = false;
+            if (conditions.Length == 0) return true;
+
+            foreach (ICondition c in conditions)
+            {
+                met |= c.Met;
+            }
+
+            return met;
+        }
+
         public RuleCondition()
         {
             Conditions = new ICondition[] { };
-            MetFunction = CoreFunctions.AllConditionsMet;
+            MetFunction = RuleCondition.AllConditionsMet;
         }
 
         public ICondition[] Conditions { get; set; }

@@ -19,13 +19,13 @@
         /// <summary>
         /// A list of processes held in this container.
         /// </summary>
-        IProcess[] ProcessList { get; }
+        ITask[] TaskList { get; }
 
         /// <summary>
-        /// Adds a process to this container.
+        /// Adds a process task to this container.
         /// </summary>
-        /// <param name="p">A generic process instance.</param>
-        void AddProcess(IProcess p);
+        /// <param name="task">A task to execute in this container.</param>
+        void AddTask(ITask task);
 
         /// <summary>
         /// Executes all the held processes in the container.
@@ -35,8 +35,15 @@
         /// <summary>
         /// The operating-specific commands called from a task run script.
         /// </summary>
-        /// <param name="functionText">The run script text associated with a task.</param>
-        void ExecuteFunction(string functionText);
+        /// <param name="task">The task that contains the run script to execute.</param>
+        /// <returns>A textual message indicating any issues running the script.</returns>
+        string ExecuteTask(ITask task);
+
+        /// <summary>
+        /// A container-specific implementation of how to handle error messages.
+        /// </summary>
+        /// <param name="errorText">The error text generated from the execute function.</param>
+        void HandleError(string errorText);
     }
 
     /// <summary>
@@ -63,6 +70,14 @@
         /// Indicates whether or not changes can be made to the element.
         /// </summary>
         bool Locked { get; set; }
+
+        /// <summary>
+        /// Returns if the element is completely defined.
+        /// </summary>
+        /// <remarks>
+        /// An invalid element cannot be locked or used in a running process.
+        /// </remarks>
+        bool IsValid { get; }
     }
 
     /// <summary>
@@ -128,6 +143,20 @@
         bool Modified { get; }
     }
 
+    public interface IParameter : IValue
+    {
+        bool InputParameter { get; set; }
+
+        bool Required { get; set; }
+    }
+
+    public interface IValueView<T> : IValue
+    {
+        IValue SourceValue { get; set; }
+
+        new T Value { get; }
+    }
+
     /// <summary>
     /// The base element that can make changes to value elements.
     /// <para>
@@ -156,6 +185,13 @@
         /// A collection of value elements that are used during the run process. 
         /// </summary>
         IValue[] Values { get; set; }
+
+        /// <summary>
+        /// Returns the value contained in the task with the specified name.
+        /// </summary>
+        /// <param name="name">The case-insensitive name of the value.</param>
+        /// <returns>The specified value or <code>Undefined.Value</code> if no value exists.</returns>
+        IValue GetValue(string name);
     }
 
     /// <summary>
@@ -206,60 +242,6 @@
     }
 
     /// <summary>
-    /// A parameter contained in a event message.
-    /// </summary>
-    public struct EventParameter
-    {
-        private IValue _paramValue;
-        private bool _isInput;
-        private bool _isRequired;
-
-        /// <summary>
-        /// Creates a new event parameter structure with the provided value element.
-        /// </summary>
-        /// <param name="paramValue">The value element of the parameter.</param>
-        /// <param name="isInput">Whether the parameter is an input or output parameter.</param>
-        /// <param name="isRequired">Whether the parameter must hold a value.</param>
-        /// <remarks>By default, new event parameters are considered input parameters that are not required.</remarks>
-        public EventParameter(IValue paramValue, bool isInput = true, bool isRequired = false)
-        {
-            _paramValue = paramValue;
-            _isInput = isInput;
-            _isRequired = isRequired;
-        }
-
-        /// <summary>
-        /// Sets the content of the parameter value.
-        /// </summary>
-        /// <param name="o"></param>
-        public void SetValue(object o)
-        {
-            _paramValue.Value = o;
-        }
-
-        /// <summary>
-        /// Returns <code>true</code> if the parameter is an input parameter.
-        /// </summary>
-        public bool IsInput { get { return _isInput; } }
-
-        /// <summary>
-        /// Returns <code>true</code> if the parameter is an output parameter.
-        /// </summary>
-        public bool IsOutput { get { return !_isInput; } }
-
-        /// <summary>
-        /// Returns <code>true</code> if the parameter is required to have a value.
-        /// </summary>
-        public bool IsRequired { get { return _isRequired; } }
-
-
-        /// <summary>
-        /// Returns <code>true</code> if the parameter is not required to have a value.
-        /// </summary>
-        public bool IsOptional { get { return !_isRequired; } }
-    }
-
-    /// <summary>
     /// An element that contains a task as a script that run while the task is running. 
     /// </summary>
     public interface ITask : IRunnable, IStartable
@@ -269,6 +251,11 @@
         /// resides determines how to process the script.
         /// </summary>
         string FunctionText { get; set; }
+
+        /// <summary>
+        /// Returns the value containing the result from running the function script.
+        /// </summary>
+        IValue RunResult { get; }
     }
 
     /// <summary>
@@ -342,17 +329,12 @@
         /// </summary>
         /// <param name="name">The case-insensitive name of a parameter in the message.</param>
         /// <returns>An event parameter structure holding the parameter value and type.</returns>
-        EventParameter GetParameter(string name);
+        IParameter GetParameter(string name);
 
         /// <summary>
         /// A list of parameter names held in the message.
         /// </summary>
-        string[] Parameters { get; }
-
-        /// <summary>
-        /// Returns whether or not the message parameter requirements are met.
-        /// </summary>
-        bool Valid { get; }
+        string[] ParameterNames { get; }
     }
 
     /// <summary>
@@ -372,6 +354,41 @@
         Stopping,
         /// <summary>The element has completed.</summary>
         Done
+    }
+
+    public interface IDataAccessContainer : IContainer
+    {
+        void Read(IMessage message);
+
+        void Write(IMessage message);
+    }
+
+    public interface IDataDefinitionContainer : IContainer
+    {
+        void Create(IMessage message);
+
+        void Modify(IMessage message);
+
+        void Delete(IMessage message);
+
+        void Move(IMessage message);
+
+        void Copy(IMessage message);
+
+        void Open(IMessage message);
+
+        void Close(IMessage message);
+
+        void List(IMessage message);
+    }
+
+    public interface IDataManipulationContainer : IContainer
+    {
+        IValue[] Select(IMessage message);
+
+        void Update(IMessage message);
+
+        void Delete(IMessage message);
     }
 
     /// <summary>

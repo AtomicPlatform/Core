@@ -42,30 +42,5 @@ namespace Atomic.Core
         {
             return task.CurrentState == RunState.Done;
         }
-
-        static public bool AllConditionsMet(ICondition[] conditions)
-        {
-            bool met = true;
-
-            foreach (ICondition c in conditions)
-            {
-                met &= c.Met;
-            }
-
-            return met;
-        }
-
-        static public bool OneConditionMet(ICondition[] conditions)
-        {
-            bool met = false;
-            if (conditions.Length == 0) return true;
-
-            foreach (ICondition c in conditions)
-            {
-                met |= c.Met;
-            }
-
-            return met;
-        }
     }
 }
