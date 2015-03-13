@@ -65,7 +65,7 @@ namespace Atomic.Core
             set { _sourceValue = value; }
         }
 
-        abstract public T Value { get; }
+        abstract new public T Value { get; }
     }
 
     public class TextView : ValueView<string>
@@ -206,4 +206,50 @@ namespace Atomic.Core
             get { return SourceValue.Value[Key.Value]; }
         }
     }
+
+    public class TaskView : ValueView<IRunnable>, IRunnable
+    {
+        public override IRunnable Value
+        {
+            get
+            {
+                if (SourceValue is IRunnable)
+                {
+                    return (IRunnable)SourceValue.Value;
+                }
+                else
+                {
+                    return Undefined.Task;
+                }
+            }
+        }
+
+        public void Run()
+        {
+            Value.Run();
+        }
+
+        public RunState CurrentState
+        {
+            get { return Value.CurrentState; }
+        }
+
+        public TaskFunction RunFunction
+        {
+            get { return Value.RunFunction; }
+            set { }
+        }
+
+        public IValue[] Values
+        {
+            get { return Value.Values; }
+            set { }
+        }
+
+        public IValue GetValue(string name)
+        {
+            return Value.GetValue(name);
+        }
+    }
+
 }

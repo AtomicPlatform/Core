@@ -43,9 +43,16 @@ namespace Atomic.Loader
                 if (evt != null) _events.Add(evtModel.ID, evt);
             }
 
+            // a distinction needs to be made in the model
             foreach (TaskModel taskModel in model.Tasks)
             {
-                _tasks.Add(taskModel.ID, new AtomicTask());
+                switch (taskModel.TaskType)
+                {
+                    default:
+                    case TaskModel.GeneralTask:
+                        _tasks.Add(taskModel.ID, new GeneralTask());
+                        break;
+                }
             }
 
             foreach (ConditionModel condModel in model.Conditions)

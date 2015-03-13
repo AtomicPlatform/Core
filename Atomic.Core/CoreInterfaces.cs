@@ -1,4 +1,6 @@
-﻿namespace Atomic.Core
+﻿using System;
+
+namespace Atomic.Core
 {
     /// <summary>
     /// A definition for a generic runtime container.  This container will provide 
@@ -19,7 +21,7 @@
         /// <summary>
         /// A list of processes held in this container.
         /// </summary>
-        ITask[] TaskList { get; }
+        ITask[] Tasks { get; }
 
         /// <summary>
         /// Adds a process task to this container.
@@ -316,6 +318,10 @@
         /// A condition that must be met for the process to complete.
         /// </summary>
         ICondition DoneCondition { get; set; }
+
+        IContainer GetContainer(Type taskType);
+
+        void SetContainer(Type taskType, IContainer container);
     }
 
     /// <summary>
@@ -345,7 +351,7 @@
         /// <summary>The default state.  The start condition is not met.</summary>
         Ready,
         /// <summary>The element is active but not ready for running.  The start condition was met. Applies to tasks only.</summary>
-        Active,
+        Starting,
         /// <summary>The element is currently running. The stop condition is not met.</summary>
         Running,
         /// <summary>The element has completed running.  The stop condition was met.</summary>

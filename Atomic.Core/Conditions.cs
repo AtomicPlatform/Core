@@ -188,7 +188,6 @@ namespace Atomic.Core
 
     public class RuleCondition : AtomicCondition
     {
-
         static public bool AllConditionsMet(ICondition[] conditions)
         {
             bool met = true;

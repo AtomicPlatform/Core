@@ -15,10 +15,16 @@ namespace Atomic.Core
         static private IValue _value = new UndefinedValue();
         static private IMessage _message = new UndefinedMessage();
         static private IParameter _param = new UndefinedParameter();
+        static private IContainer _container = new UndefinedContainer();
 
         static public ICondition Condition
         {
             get { return _condition; }
+        }
+
+        static public IContainer Container
+        {
+            get { return _container; }
         }
 
         static public IEvent Event
@@ -88,6 +94,36 @@ namespace Atomic.Core
         { 
             get { return false; } 
         }
+    }
+
+    class UndefinedContainer : UndefinedElement, IContainer
+    {
+        private ITask[] _tasks = new ITask[0];
+
+        public bool DebugMode
+        {
+            get { return false; }
+            set {}
+        }
+
+        public System.IO.Stream DebugStream
+        {
+            get { return null; }
+            set {}
+        }
+
+        public ITask[] Tasks
+        {
+            get { return _tasks; }
+        }
+
+        public void AddTask(ITask task) { }
+
+        public void Run() { }
+
+        public string ExecuteTask(ITask task) { return ""; }
+
+        public void HandleError(string errorText) { }
     }
 
     class UndefinedFunction : UndefinedElement, IFunction

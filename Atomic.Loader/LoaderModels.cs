@@ -495,9 +495,12 @@ namespace Atomic.Loader
     [XmlRoot(ElementName="task")]
     public class TaskModel : ElementModel<ITask>
     {
+        public const string GeneralTask = "general";
+
         private RefIdModel _startConditionID;
         private RefIdModel _stopConditionID;
-        private string _runScript;
+        private string _runScript = "";
+        private string _taskType = "";
 
         [XmlElement(ElementName = "startOnCondition", Namespace = "")]
         public RefIdModel StartCondition
@@ -516,8 +519,15 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "runScript", Namespace = "")]
         public string RunScript
         {
-            get { if (_runScript == null) _runScript = ""; return _runScript; }
+            get { return _runScript; }
             set { if (value == null) value = ""; _runScript = value; }
+        }
+
+        [XmlElement(ElementName = "type", Namespace = "")]
+        public string TaskType
+        {
+            get { return _taskType; }
+            set { if (value == null) value = ""; _taskType = value; }
         }
 
         override public void Import(ProcessModel model, ITask task)

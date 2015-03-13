@@ -14,7 +14,7 @@ namespace Atomic.Core
 
         public System.IO.Stream DebugStream { get; set; }
 
-        public ITask[] TaskList
+        public ITask[] Tasks
         {
             get { return _taskList.ToArray(); }
             protected set
@@ -78,7 +78,7 @@ namespace Atomic.Core
             List<ITask> activeTasks = new List<ITask>();
 
             // gather list of all process tasks
-            foreach (ITask task in TaskList)
+            foreach (ITask task in Tasks)
             {
                 if (DebugMode) WriteDebugMessage("Task {" + task.Name + "}, CurrentState = " + task.CurrentState.ToString());
                 if (task.CurrentState == RunState.Running)
@@ -101,7 +101,7 @@ namespace Atomic.Core
             }
 
             // update process state
-            foreach (ITask task in TaskList)
+            foreach (ITask task in Tasks)
             {
                 if (DebugMode) WriteDebugMessage("Updating process {" + task.Name + "}");
                 task.Update();
@@ -544,7 +544,7 @@ namespace Atomic.Core
         abstract public void Run();
     }
 
-    public class AtomicTask : AtomicRunnable, ITask
+    abstract public class AtomicTask : AtomicRunnable, ITask
     {
         private ICondition _startCondition = Undefined.Condition;
         private ICondition _stopCondition = Undefined.Condition;
@@ -553,7 +553,7 @@ namespace Atomic.Core
 
         public AtomicTask()
         {
-            TaskCondition taskCond = new TaskCondition() { Task = this, State = RunState.RunComplete };
+            TaskCondition taskCond = new TaskCondition() { Task = this, State = RunState.Running };
             StopCondition = taskCond;
 
             StartCondition = new StandaloneCondition()
@@ -597,7 +597,6 @@ namespace Atomic.Core
             switch (CurrentState)
             {
                 case RunState.Running:
-                case RunState.RunComplete:
                     RunFunction(this);
                     break;
             }
@@ -614,9 +613,6 @@ namespace Atomic.Core
                     }
                     break;
                 case RunState.Running:
-                case RunState.RunComplete:
-                    CurrentState = RunState.RunComplete;
-
                     if (StopCondition.Met)
                     {
                         CurrentState = RunState.Done;
@@ -692,6 +688,7 @@ namespace Atomic.Core
         private List<ITask> _tasks = new List<ITask>();
 
         private ICondition _doneCondition = Undefined.Condition;
+        private IDictionary<Type, IContainer> _containers = new Dictionary<Type, IContainer>();
 
         static public ICondition TaskStateCondition(IRunnable task, RunState runState)
         {
@@ -756,6 +753,23 @@ namespace Atomic.Core
             return (matchTask == null) ? Undefined.Task : matchTask;
         }
 
+        public IContainer GetContainer(Type taskType)
+        {
+            if (_containers.ContainsKey(taskType))
+            {
+                return _containers[taskType];
+            }
+            else
+            {
+                return Undefined.Container;
+            }
+        }
+
+        public void SetContainer(Type taskType, IContainer container)
+        {
+            _containers[taskType] = container;
+        }
+
         public override bool Locked
         {
             get { return base.Locked; }
@@ -783,8 +797,15 @@ namespace Atomic.Core
                 case RunState.Ready:
                     if (StartEvent.StartCondition.Met)
                     {
-                        CurrentState = RunState.Running;
+                        CurrentState = RunState.Starting;
                         StartEvent.Update();
+                    }
+                    break;
+                case RunState.Starting:
+                    ITask[] tasks = GetStartingTasks();
+                    if (tasks.Length == 0)
+                    {
+                        CurrentState = RunState.Running;
                     }
                     break;
                 case RunState.Running:
@@ -814,6 +835,23 @@ namespace Atomic.Core
         protected override string ElementName
         {
             get { return "program"; }
+        }
+
+        private ITask[] GetStartingTasks()
+        {
+            List<ITask> taskList = new List<ITask>();
+            taskList.AddRange(GetRunningTasks());
+            taskList.AddRange(Tasks.Where(x => x.StartCondition.Met && x.CurrentState == RunState.Ready));
+
+            return taskList.ToArray();
+        }
+
+        private ITask[] GetRunningTasks()
+        {
+            List<ITask> taskList = new List<ITask>();
+            taskList.AddRange(Tasks.Where(x => x.CurrentState != RunState.Ready && x.CurrentState != RunState.Done));
+
+            return taskList.ToArray();
         }
     }
 
