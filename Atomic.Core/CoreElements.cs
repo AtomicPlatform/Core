@@ -3,120 +3,85 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Atomic.Core
 {
-    abstract public class BaseContainer : IContainer
+    public delegate bool ContainerCommand(string commandText);
+
+    abstract public class AtomicContainer : AtomicElement, IContainer
     {
-        private List<ITask> _taskList = new List<ITask>();
+        private IDictionary<IProcess, ITask[]> _tasks = new Dictionary<IProcess, ITask[]>();
+        private List<ContainerCommand> _commandList = new List<ContainerCommand>();
 
-        public bool DebugMode { get; set; }
+        static protected string SubstituteValues(string text, IRunnable task)
+        {
+            StringBuilder buffer = new StringBuilder(text);
+            // do value substitution
+            foreach (IValue inputValue in task.Inputs)
+            {
+                TextView view = (TextView)inputValue;
+                buffer.Replace("${" + view.ID + "}", view.ViewValue);
+            }
 
-        public System.IO.Stream DebugStream { get; set; }
+            return buffer.ToString();
+        }
+
+        static protected string UnQuoteText(string text)
+        {
+            return text.Substring(1, text.Length - 2);
+        }
 
         public ITask[] Tasks
         {
-            get { return _taskList.ToArray(); }
-            protected set
+            get
             {
-                _taskList.Clear();
-                _taskList.AddRange(value);
-            }
-        }
-
-        public void AddTask(ITask task)
-        {
-            _taskList.Add(task);
-            task.Locked = true;
-        }
-
-        abstract public void Run();
-
-        abstract public string ExecuteTask(ITask task);
-
-        abstract public void HandleError(string errorText);
-
-        public string FormatResponse(IDictionary<string, object> response)
-        {
-            if (response.Count == 0) return "";
-
-            StringBuilder builder = new StringBuilder();
-            builder.Append("{ ");
-            foreach (KeyValuePair<string, object> keyPair in response)
-            {
-                builder.Append("\"" + keyPair.Key + "\": " + ToJsonString(keyPair.Value));
-                if (keyPair.Key != response.Last().Key) builder.Append(", ");
-            }
-
-            builder.Append(" }");
-
-            return builder.ToString();
-        }
-
-        private string ToJsonString(object o)
-        {
-            if (o is string)
-            {
-                return "\"" + (string)o + "\"";
-            }
-            else
-            {
-                return "\"" + o.ToString() + "\"";
-            }
-        }
-    }
-
-
-    abstract public class RunContainer : BaseContainer
-    {
-        private int _step = 0;
-
-        override public void Run()
-        {
-            _step++;
-            if (DebugMode) WriteDebugMessage("Current step: " + _step + "...");
-            List<ITask> activeTasks = new List<ITask>();
-
-            // gather list of all process tasks
-            foreach (ITask task in Tasks)
-            {
-                if (DebugMode) WriteDebugMessage("Task {" + task.Name + "}, CurrentState = " + task.CurrentState.ToString());
-                if (task.CurrentState == RunState.Running)
+                List<ITask> taskList = new List<ITask>();
+                foreach (ITask[] tasks in _tasks.Values)
                 {
-                    activeTasks.Add(task);
+                    taskList.AddRange(tasks);
+                }
+
+                return taskList.ToArray();
+            }
+        }
+
+        public void AddProcess(IProcess process)
+        {
+            List<ITask> taskList = new List<ITask>();
+            process.Locked = true;
+
+            if (!process.Locked) return;
+
+            foreach (ITask task in process.Tasks)
+            {
+                MethodInfo meth = GenerateMethod(task.RunFunction);
+                if (meth != null)
+                {
+                    AtomicFunction func = (AtomicFunction)task.RunFunction;
+                    func.Method = meth;
+                    taskList.Add(task);
                 }
             }
 
-            // run each task
-            foreach (ITask task in activeTasks)
-            {
-                foreach (IValue v in task.Values) v.Update();
-
-                if (task.CurrentState == RunState.Running
-                    || task.CurrentState == RunState.RunComplete)
-                {
-                    string result = ExecuteTask(task);
-                    HandleError(result);
-                }
-            }
-
-            // update process state
-            foreach (ITask task in Tasks)
-            {
-                if (DebugMode) WriteDebugMessage("Updating process {" + task.Name + "}");
-                task.Update();
-            }
+            _tasks[process] = taskList.ToArray();
         }
 
-        private void WriteDebugMessage(string message)
+        public void RemoveProcess(IProcess process)
         {
-            UTF8Encoding enc = new UTF8Encoding();
-            byte[] buffer = enc.GetBytes(message + "\n");
-
-            DebugStream.Write(buffer, 0, buffer.Length);
-            DebugStream.Flush();
+            _tasks.Remove(process);
         }
-    }
+
+        virtual public void Run()
+        {
+            foreach (ITask task in Tasks.Where(x => x.CurrentState == RunState.Running))
+            {
+                task.Run();
+            }
+        }
+
+        abstract protected MethodInfo GenerateMethod(IFunction func);
+    };
 
     public class AtomicElement : IElement
     {
@@ -181,6 +146,8 @@ namespace Atomic.Core
     public class AtomicFunction : AtomicElement, IFunction
     {
         private MethodInfo _meth = null;
+        private string _functionText = "";
+        private string[] _functionTokens = new string[0];
 
         public AtomicFunction() { }
 
@@ -196,6 +163,11 @@ namespace Atomic.Core
             {
                 _meth = null;
             }
+        }
+
+        public AtomicFunction(string assemblyName, string moduleName, string methodName)
+        {
+
         }
 
         public string AsmName
@@ -272,6 +244,22 @@ namespace Atomic.Core
         public MethodInfo Method
         {
             get { return _meth; }
+            set { _meth = value; }
+        }
+
+        public string FunctionText
+        {
+            get { return _functionText; }
+            set
+            {
+                _functionText = value;
+                _functionTokens = SplitFunction();
+            }
+        }
+
+        public string[] FunctionTokens
+        {
+            get { return _functionTokens; }
         }
 
         protected override string ElementName
@@ -299,6 +287,90 @@ namespace Atomic.Core
         {
             return AsmName.GetHashCode() * MethodName.GetHashCode() * ModuleName.GetHashCode();
         }
+
+        private string[] SplitFunction()
+        {
+            List<string> tokenList = new List<string>();
+
+            // this is very memory inefficient but regex just isn't working for me...
+            string text = _functionText.Trim();
+            int startPos = 0;
+            int endPos = 1;
+
+            while (text.Length > 0)
+            {
+                endPos = 1;
+                if (text[0] == '"')
+                {
+                    // look for ending quote
+                    bool found = false;
+                    while (!found)
+                    {
+                        endPos = text.IndexOf('"', endPos);
+                        if (endPos == -1) break;
+
+                        if (text[endPos - 1] == '\\') continue;
+                        found = true;
+                    }
+
+                    if (found)
+                    {
+                        text = FormatReferences(text);
+                        tokenList.Add(text.Substring(startPos, endPos + 1));
+                        text = text.Substring(endPos + 1).TrimStart();
+                    }
+                    else
+                    {
+                        // no ending quote, ignore
+                        text = "";
+                    }
+                }
+                else
+                {
+                    // look for next space
+                    endPos = text.IndexOf(' ');
+                    if (endPos > 0)
+                    {
+                        tokenList.Add(text.Substring(0, endPos));
+                        text = text.Substring(endPos + 1);
+                    }
+                    else
+                    {
+                        // last token
+                        tokenList.Add(text);
+                        text = "";
+                    }
+                }
+            }
+
+            return tokenList.ToArray();
+        }
+
+        private string FormatReferences(string text)
+        {
+            int startPos = 0;
+            int endPos = 0;
+
+            while (startPos >= 0)
+            {
+                startPos = text.IndexOf("${", startPos);
+                if (startPos >= 0) endPos = text.IndexOf('}', startPos);
+                if (startPos >= 0 && endPos >= 0)
+                {
+                    int posLength = endPos - startPos + 1;
+                    string variableName = text.Substring(startPos + 2, posLength - 3);
+                    string variableID = AtomicElement.GenerateID(variableName);
+
+                    text = text.Remove(startPos, posLength);
+                    text = text.Insert(startPos, "${" + variableID + "}");
+
+                    startPos = endPos + 1;
+                }
+            }
+
+            return text;
+        }
+
     }
 
     /*
@@ -353,8 +425,14 @@ namespace Atomic.Core
         {
             if (Modified)
             {
-                _publicValue = _internalValue;
-                Modified = false;
+                if (_publicValue == _internalValue)
+                {
+                    Modified = false;
+                }
+                else
+                {
+                    _publicValue = _internalValue;
+                }
             }
         }
 
@@ -395,29 +473,11 @@ namespace Atomic.Core
         }
     }
 
-    public class ParameterValue : AtomicValue, IParameter
-    {
-        private bool _isInput = true;
-        private bool _isRequired = true;
-
-        public bool InputParameter
-        {
-            get { return _isInput; }
-            set { _isInput = value; }
-        }
-
-        public bool Required
-        {
-            get { return _isRequired; }
-            set { _isRequired = value; }
-        }
-    }
-
     abstract public class AtomicView : AtomicValue
     {
-        abstract public override object Value
+        public override object Value
         {
-            get;
+            get { return null; }
         }
     }
 
@@ -440,24 +500,12 @@ namespace Atomic.Core
     }
 
 
-    abstract public class AtomicEvent : AtomicElement, IEvent
+    abstract public class AtomicEvent : AtomicCondition, IEvent
     {
-        private ICondition _condition = Undefined.Condition;
         private IProcess _process = null;
 
         public AtomicEvent()
         {
-        }
-
-        override public bool Locked
-        {
-            get { return base.Locked; }
-            set
-            {
-                StartCondition.Locked = value;
-
-                base.Locked = value;
-            }
         }
 
         public IProcess Process
@@ -466,65 +514,66 @@ namespace Atomic.Core
             set
             {
                 _process = value;
-                InitializeStartCondition();
             }
-        }
-
-        virtual public ICondition StartCondition
-        {
-            get { return _condition; }
-            protected set { _condition = value; }
         }
 
         protected override string ElementName
         {
             get { return "event"; }
         }
-
-        abstract protected void InitializeStartCondition();
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null) return false;
-            if (obj is AtomicEvent)
-            {
-                AtomicEvent evt = (AtomicEvent)obj;
-                return evt.StartCondition.Equals(StartCondition);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public override int GetHashCode()
-        {
-            int startHash = (StartCondition == null) ? 1 : StartCondition.GetHashCode();
-
-            return 17 * startHash;
-        }
     }
 
     abstract public class AtomicRunnable : AtomicElement, IRunnable
     {
-        private List<IValue> _values = new List<IValue>();
-        private TaskFunction _func = CoreFunctions.DefaultRunFunction;
+        private IDictionary<string, IValue> _outputs = new Dictionary<string, IValue>();
+        private IDictionary<string, IValueView> _inputs = new Dictionary<string, IValueView>();
+        private IFunction _func = Undefined.Function;
         private RunState _state = RunState.Ready;
 
-        public IValue[] Values
-        {
-            get { return _values.ToArray(); }
-            set
-            {
-                _values.Clear();
-                _values.AddRange(value);
-            }
-        }
+        public IProcess Process { get; set; }
 
-        public TaskFunction RunFunction
+        public IFunction RunFunction
         {
             get { return _func; }
             set { _func = value; }
+        }
+
+        public IValueView[] Inputs
+        {
+            get { return _inputs.Values.ToArray(); }
+            set
+            {
+                _inputs.Clear();
+                foreach (IValueView v in value)
+                {
+                    _inputs.Add(v.ID, v);
+                }
+            }
+        }
+
+        public IValueView GetInput(string name)
+        {
+            string id = AtomicElement.GenerateID(name);
+            return (_inputs.ContainsKey(id)) ? _inputs[id] : Undefined.View;
+        }
+
+        public IValue[] Outputs
+        {
+            get { return _outputs.Values.ToArray(); }
+            set
+            {
+                _outputs.Clear();
+                foreach (IValue v in value)
+                {
+                    _outputs.Add(v.ID, v);
+                }
+            }
+        }
+
+        public IValue GetOutput(string name)
+        {
+            string id = AtomicElement.GenerateID(name);
+            return (_outputs.ContainsKey(id)) ? _outputs[id] : Undefined.Value;
         }
 
         public RunState CurrentState
@@ -533,27 +582,47 @@ namespace Atomic.Core
             set { _state = value; }
         }
 
-        public IValue GetValue(string name)
+        virtual public void Run()
         {
-            string nameID = AtomicElement.GenerateID(name);
-            IValue matchValue = _values.Where(x => x.ID == nameID).FirstOrDefault();
-
-            return (matchValue == null) ? Undefined.Value : matchValue;
+            MethodInfo meth = _func.Method;
+            if (meth == null) return;
+            meth.Invoke(null, new object[] { this });
         }
 
-        abstract public void Run();
+        virtual public void Cancel()
+        {
+            CurrentState = RunState.Done;
+        }
+
+        public override bool Locked
+        {
+            get { return base.Locked; }
+            set
+            {
+                base.Locked = value;
+                if (base.Locked != value) return;
+
+                foreach (IValueView v in _inputs.Values)
+                {
+                    v.Locked = value;
+                }
+
+                foreach (IValue v in _outputs.Values)
+                {
+                    v.Locked = value;
+                }
+            }
+        }
     }
 
     abstract public class AtomicTask : AtomicRunnable, ITask
     {
         private ICondition _startCondition = Undefined.Condition;
         private ICondition _stopCondition = Undefined.Condition;
-        private string _funcText = "";
-        private IValue _runResult = new AtomicValue();
 
         public AtomicTask()
         {
-            TaskCondition taskCond = new TaskCondition() { Task = this, State = RunState.Running };
+            TaskCondition taskCond = new TaskCondition() { Task = this, State = RunState.RunComplete };
             StopCondition = taskCond;
 
             StartCondition = new StandaloneCondition()
@@ -561,7 +630,7 @@ namespace Atomic.Core
                 MetFunction = CoreFunctions.DefaultMetFunction
             };
 
-            RunFunction = CoreFunctions.DefaultRunFunction;
+            //RunFunction = CoreFunctions.DefaultRunFunction;
         }
 
         public ICondition StartCondition
@@ -576,29 +645,11 @@ namespace Atomic.Core
             set { _stopCondition = value; }
         }
 
-        public string FunctionText
-        {
-            get { return _funcText; }
-            set { _funcText = value; }
-        }
-
-        public IValue RunResult
-        {
-            get { return _runResult; }
-        }
-
         override public void Run()
         {
-            foreach (IValue v in Values)
+            if (CurrentState == RunState.Running)
             {
-                v.Update();
-            }
-
-            switch (CurrentState)
-            {
-                case RunState.Running:
-                    RunFunction(this);
-                    break;
+                base.Run();
             }
         }
 
@@ -607,61 +658,30 @@ namespace Atomic.Core
             switch (CurrentState)
             {
                 case RunState.Ready:
-                    if (StartCondition == null || StartCondition.Met)
+                    if (StartCondition == Undefined.Condition || StartCondition.Met)
                     {
                         CurrentState = RunState.Running;
                     }
+
                     break;
                 case RunState.Running:
-                    if (StopCondition.Met)
+                    CurrentState = RunState.RunComplete;
+
+                    // update the outputs 
+                    foreach (IValue v in Outputs)
                     {
-                        CurrentState = RunState.Done;
+                        v.Update();
                     }
+
+                    break;
+                case RunState.RunComplete:
+                    CurrentState = (StopCondition.Met) ? RunState.Done : RunState.Running;
+
                     break;
                 case RunState.Done:
                     CurrentState = RunState.Ready;
                     break;
             }
-        }
-
-        protected override string ElementName
-        {
-            get { return "task"; }
-        }
-    }
-
-    public class AtomicActivity : AtomicTask, IActivity
-    {
-        private List<ITask> _tasks = new List<ITask>();
-
-        public AtomicActivity()
-        {
-        }
-
-        public override void Run()
-        {
-            base.Run();
-
-            foreach (ITask t in Tasks)
-            {
-                t.Run();
-            }
-        }
-
-        public override void Update()
-        {
-            base.Update();
-
-            foreach (ITask t in Tasks)
-            {
-                t.Update();
-            }
-        }
-
-        public ITask[] Tasks
-        {
-            get { return _tasks.ToArray(); }
-            set { _tasks.Clear(); _tasks.AddRange(value); }
         }
 
         public override bool Locked
@@ -670,12 +690,12 @@ namespace Atomic.Core
             set
             {
                 base.Locked = value;
-
-                foreach (ITask t in Tasks)
-                {
-                    t.Locked = value;
-                }
+                if (base.Locked != value) return;
             }
+        }
+        protected override string ElementName
+        {
+            get { return "task"; }
         }
     }
 
@@ -709,6 +729,7 @@ namespace Atomic.Core
         {
             _startEvent.Process = this;
             _stopEvent.Process = this;
+            DoneCondition = AtomicProcess.TaskStateCondition(this, RunState.Running);
         }
 
         public IEvent StartEvent
@@ -735,13 +756,27 @@ namespace Atomic.Core
             }
         }
 
+        public IEvent GetEvent(string name)
+        {
+            string key = AtomicElement.GenerateID(name);
+            IEvent evt = _events.Where(x => x.ID == key).FirstOrDefault();
+
+            return (evt == null) ? Undefined.Event : evt;
+        }
+
         public ITask[] Tasks
         {
             get { return _tasks.ToArray(); }
             set
             {
                 _tasks.Clear();
-                _tasks.AddRange(value);
+
+                foreach (ITask task in value)
+                {
+                    _tasks.Add(task);
+                    task.Process = this;
+                }
+
             }
         }
 
@@ -777,7 +812,13 @@ namespace Atomic.Core
             {
                 StartEvent.Locked = value;
                 StopEvent.Locked = value;
-                foreach (ITask task in Events)
+
+                foreach (IEvent evt in _events)
+                {
+                    evt.Locked = value;
+                }
+
+                foreach (ITask task in _tasks)
                 {
                     task.Locked = value;
                 }
@@ -795,28 +836,78 @@ namespace Atomic.Core
             switch (CurrentState)
             {
                 case RunState.Ready:
-                    if (StartEvent.StartCondition.Met)
+                    if (StartEvent.Met)
                     {
                         CurrentState = RunState.Starting;
                         StartEvent.Update();
                     }
                     break;
                 case RunState.Starting:
-                    ITask[] tasks = GetStartingTasks();
-                    if (tasks.Length == 0)
+                    ITask[] startingTasks = GetActiveTasks();
+                    if (startingTasks.Length == 0)
                     {
                         CurrentState = RunState.Running;
                     }
+                    else
+                    {
+                        foreach (ITask task in startingTasks)
+                        {
+                            task.Update();
+                        }
+                    }
+
                     break;
                 case RunState.Running:
-                    if (StopEvent.StartCondition.Met)
+                    if (StopEvent.Met)
                     {
                         CurrentState = RunState.RunComplete;
-                        StopEvent.Update();
                     }
+                    foreach (ITask task in Tasks)
+                    {
+                        task.Update();
+                    }
+
                     break;
                 case RunState.RunComplete:
-                    CurrentState = RunState.Done;
+                    List<ITask> runningTasks = new List<ITask>();
+                    runningTasks.AddRange(Tasks.Where(
+                        x => x.CurrentState == RunState.Running || x.CurrentState == RunState.RunComplete
+                    ));
+
+                    if (runningTasks.Count == 0)
+                    {
+                        CurrentState = RunState.Stopping;
+                        StopEvent.Update();
+                    }
+                    foreach (ITask task in runningTasks)
+                    {
+                        if (task.StopCondition.Met)
+                        {
+                            task.Update();
+                        }
+                        else
+                        {
+                            task.Cancel();
+                        }
+                    }
+
+                    break;
+                case RunState.Stopping:
+                    ITask[] stoppingTasks = GetActiveTasks();
+                    if (stoppingTasks.Length == 0)
+                    {
+                        CurrentState = RunState.Done;
+                    }
+                    else
+                    {
+                        foreach (ITask task in stoppingTasks)
+                        {
+                            task.Update();
+                        }
+                    }
+                    break;
+                case RunState.Done:
+                    // stay in the state
                     break;
             }
         }
@@ -828,7 +919,31 @@ namespace Atomic.Core
             {
                 _doneCondition = value;
                 _doneCondition.Name = "_done";
-                ((StopEvent)StopEvent).UpdateCondition(_doneCondition);
+            }
+        }
+
+        public void ResetValues()
+        {
+            foreach (IValue v in Outputs.Where(x => x.Modified))
+            {
+                v.Update();
+            }
+
+            foreach (ITask t in Tasks)
+            {
+                foreach (IValue v in t.Outputs.Where(x => x.Modified))
+                {
+                    v.Update();
+                }
+            }
+        }
+
+        public override bool IsValid
+        {
+            get
+            {
+                // to do: this needs to walk the tree
+                return base.IsValid;
             }
         }
 
@@ -837,7 +952,7 @@ namespace Atomic.Core
             get { return "program"; }
         }
 
-        private ITask[] GetStartingTasks()
+        private ITask[] GetActiveTasks()
         {
             List<ITask> taskList = new List<ITask>();
             taskList.AddRange(GetRunningTasks());
@@ -853,33 +968,7 @@ namespace Atomic.Core
 
             return taskList.ToArray();
         }
-    }
 
-    public class AtomicMessage : AtomicElement, IMessage
-    {
-        private List<IParameter> _paramList = new List<IParameter>();
 
-        public IParameter[] Parameters
-        {
-            get { return _paramList.ToArray(); }
-            set
-            {
-                _paramList.Clear();
-                _paramList.AddRange(value);
-            }
-        }
-
-        public IParameter GetParameter(string name)
-        {
-            string paramID = AtomicElement.GenerateID(name);
-            IParameter para = _paramList.Where(x => x.ID == paramID).FirstOrDefault();
-
-            return para;
-        }
-
-        public string[] ParameterNames
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }

@@ -13,9 +13,9 @@ namespace Atomic.Core
         static private IEvent _event = new UndefinedEvent();
         static private ITask _task = new UndefinedTask();
         static private IValue _value = new UndefinedValue();
-        static private IMessage _message = new UndefinedMessage();
-        static private IParameter _param = new UndefinedParameter();
+        static private IValueView _view = new UndefinedView();
         static private IContainer _container = new UndefinedContainer();
+        static private IProcess _process = new UndefinedProcess();
 
         static public ICondition Condition
         {
@@ -37,14 +37,9 @@ namespace Atomic.Core
             get { return _function; }
         }
 
-        static public IMessage Message
+        static public IProcess Process
         {
-            get { return _message; }
-        }
-
-        static public IParameter Parameter
-        {
-            get { return _param; }
+            get { return _process; }
         }
 
         static public ITask Task
@@ -55,6 +50,11 @@ namespace Atomic.Core
         static public IValue Value
         {
             get { return _value; }
+        }
+
+        static public IValueView View
+        {
+            get { return _view; }
         }
     }
 
@@ -100,34 +100,22 @@ namespace Atomic.Core
     {
         private ITask[] _tasks = new ITask[0];
 
-        public bool DebugMode
-        {
-            get { return false; }
-            set {}
-        }
-
-        public System.IO.Stream DebugStream
-        {
-            get { return null; }
-            set {}
-        }
-
         public ITask[] Tasks
         {
             get { return _tasks; }
         }
 
-        public void AddTask(ITask task) { }
+        public void AddProcess(IProcess process) { }
+
+        public void RemoveProcess(IProcess process) { }
 
         public void Run() { }
-
-        public string ExecuteTask(ITask task) { return ""; }
-
-        public void HandleError(string errorText) { }
     }
 
     class UndefinedFunction : UndefinedElement, IFunction
     {
+        private string[] _tokens = new string[0];
+
         public string AsmName 
         { 
             get { return ""; }
@@ -148,52 +136,131 @@ namespace Atomic.Core
             get { return null; }
         }
 
+        public string FunctionText 
+        {
+            get { return ""; }
+            set { }
+        }
+
         public void SetProperties(string assemblyName, string moduleName, string methodName) { }
+
+        public string[] FunctionTokens
+        {
+            get { return _tokens; }
+        }
     }
 
-    class UndefinedEvent : UndefinedElement, IEvent
+    class UndefinedEvent : UndefinedCondition, IEvent
     {
-        public ICondition StartCondition
+        public IProcess Process
+        {
+            get { return Undefined.Process; }
+            set { }
+        }
+    }
+
+    class UndefinedProcess : UndefinedElement, IProcess
+    {
+        private IEvent[] _events = new IEvent[0];
+        private ITask[] _tasks = new ITask[0];
+        private IValue[] _outputs = new IValue[0];
+        private IValueView[] _inputs = new IValueView[0];
+
+        public IEvent StartEvent
+        {
+            get { return Undefined.Event; }
+        }
+
+        public IEvent StopEvent
+        {
+            get { return Undefined.Event; }
+        }
+
+        public IEvent[] Events
+        {
+            get { return _events; }
+            set {}
+        }
+
+        public ITask[] Tasks
+        {
+            get { return _tasks; }
+            set { }
+        }
+
+        public ITask GetTask(string name)
+        {
+            return Undefined.Task;
+        }
+
+        public ICondition DoneCondition
         {
             get { return Undefined.Condition; }
             set { }
         }
 
-        public IProcess Process
+        public IContainer GetContainer(Type taskType)
         {
-            get { return null; }
+            return Undefined.Container;
+        }
+
+        public void SetContainer(Type taskType, IContainer container) { }
+
+        public void Run() { }
+
+        public RunState CurrentState
+        {
+            get { return RunState.Ready; }
+        }
+
+        public string FunctionText
+        {
+            get { return ""; }
             set { }
         }
-    }
 
-    class UndefinedMessage : UndefinedElement, IMessage
-    {
-        private string[] _params = new string[0];
-
-        public IParameter GetParameter(string name)
+        public IFunction RunFunction
         {
-            return Undefined.Parameter;
+            get { return Undefined.Function; }
+            set { }
         }
 
-        public string[] ParameterNames
+        public IValueView[] Inputs
         {
-            get { return _params; }
-        }
-    }
-
-    class UndefinedParameter : UndefinedValue, IParameter
-    {
-
-        public bool InputParameter
-        {
-            get { return true; }
-            set {}
+            get { return _inputs; }
+            set { }
         }
 
-        public bool Required
+        public IValueView GetInput(string name)
         {
-            get { return false; }
-            set {}
+            return Undefined.View;
+        }
+
+        public IValue[] Outputs
+        {
+            get { return _outputs; }
+            set { }
+        }
+
+        public IValue GetOutput(string name)
+        {
+            return Undefined.Value;
+        }
+
+
+        public IEvent GetEvent(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResetValues() { }
+
+        public void Cancel() { }
+
+        public IProcess Process
+        {
+            get { return Undefined.Process; }
+            set { }
         }
     }
 
@@ -214,22 +281,18 @@ namespace Atomic.Core
             get { return RunState.Done; }
         }
 
-        public TaskFunction RunFunction
+        public IProcess Process
         {
-            get { return UndefinedTask.DefaultRunFunction; }
+            get { return Undefined.Process; }
             set { }
         }
 
-        public IValue[] Values
+        public IFunction RunFunction
         {
-            get { return new IValue[0]; }
+            get { return Undefined.Function; }
             set { }
         }
 
-        public IValue GetValue(string name)
-        {
-            return Undefined.Value;
-        }
         public ICondition StartCondition
         {
             get { return Undefined.Condition; }
@@ -242,10 +305,41 @@ namespace Atomic.Core
             set { }
         }
 
-        public IValue RunResult
+        public IValueView[] Inputs
         {
-            get { return Undefined.Value; }
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
+
+        public IValueView GetInput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IValue[] Outputs
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValue GetOutput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Cancel() { }
     }
 
     class UndefinedValue : UndefinedElement, IValue
@@ -259,6 +353,34 @@ namespace Atomic.Core
         public bool Modified
         {
             get { return false; }
+        }
+    }
+
+    class UndefinedView : UndefinedValue, IValueView
+    {
+
+        public IValue SourceValue
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool Required
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

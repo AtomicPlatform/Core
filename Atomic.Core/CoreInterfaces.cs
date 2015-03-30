@@ -2,51 +2,6 @@
 
 namespace Atomic.Core
 {
-    /// <summary>
-    /// A definition for a generic runtime container.  This container will provide 
-    /// the proper operating system response to task script definitions.
-    /// </summary>
-    public interface IContainer
-    {
-        /// <summary>
-        /// A flag to indicate whether the container should allow the process to be debugged.
-        /// </summary>
-        bool DebugMode { get; set; }
-
-        /// <summary>
-        /// The stream used to send debug information back to this container for processing.
-        /// </summary>
-        System.IO.Stream DebugStream { get; set; }
-
-        /// <summary>
-        /// A list of processes held in this container.
-        /// </summary>
-        ITask[] Tasks { get; }
-
-        /// <summary>
-        /// Adds a process task to this container.
-        /// </summary>
-        /// <param name="task">A task to execute in this container.</param>
-        void AddTask(ITask task);
-
-        /// <summary>
-        /// Executes all the held processes in the container.
-        /// </summary>
-        void Run();
-
-        /// <summary>
-        /// The operating-specific commands called from a task run script.
-        /// </summary>
-        /// <param name="task">The task that contains the run script to execute.</param>
-        /// <returns>A textual message indicating any issues running the script.</returns>
-        string ExecuteTask(ITask task);
-
-        /// <summary>
-        /// A container-specific implementation of how to handle error messages.
-        /// </summary>
-        /// <param name="errorText">The error text generated from the execute function.</param>
-        void HandleError(string errorText);
-    }
 
     /// <summary>
     /// The base element/object for all atomic elements.
@@ -127,10 +82,21 @@ namespace Atomic.Core
         /// <param name="moduleName">The name of the module/class within the assembly.</param>
         /// <param name="methodName">The name of the static method within the module/class.</param>
         void SetProperties(string assemblyName, string moduleName, string methodName);
+
+        /// <summary>
+        /// The text script associated with the function.
+        /// </summary>
+        string FunctionText { get; set; }
+
+        /// <summary>
+        /// The text script in tokenized form.
+        /// </summary>
+        string[] FunctionTokens { get; }
     }
 
     /// <summary>
-    /// An element that stores information used within a process.
+    /// An element that stores information used within a task.  The base value element is used
+    /// as an output to a task.
     /// </summary>
     public interface IValue : IElement
     {
@@ -145,18 +111,39 @@ namespace Atomic.Core
         bool Modified { get; }
     }
 
-    public interface IParameter : IValue
+    /// <summary>
+    /// Represents an abstract view of a source value element.  The view element is used as an
+    /// input to a task.
+    /// </summary>
+    public interface IValueView : IValue
     {
-        bool InputParameter { get; set; }
+        /// <summary>
+        /// The source value of the view.  The data of the source value is read as needed.
+        /// </summary>
+        IValue SourceValue { get; set; }
 
+        /// <summary>
+        /// The resulting data of the source value's data after conversion by the view.
+        /// </summary>
+        new object Value { get; }
+
+        /// <summary>
+        /// Indicates whether or not this view is required by the enclosing task as an input.
+        /// </summary>
         bool Required { get; set; }
     }
 
-    public interface IValueView<T> : IValue
+    /// <summary>
+    /// A view element that converts the data of the source value into data of type <code>T</code>.
+    /// </summary>
+    /// <typeparam name="T">Any object-based class, which includes primitives like <code>Int32</code>
+    /// </typeparam>
+    public interface IValueView<T> : IValueView
     {
-        IValue SourceValue { get; set; }
-
-        new T Value { get; }
+        /// <summary>
+        /// Returns the data contained in the source value as data of type <code>T</code>.
+        /// </summary>
+        T ViewValue { get; }
     }
 
     /// <summary>
@@ -179,85 +166,77 @@ namespace Atomic.Core
         RunState CurrentState { get; }
 
         /// <summary>
-        /// The function delegate that is executed during the run process.
+        /// The process associated with the runnable element.
         /// </summary>
-        TaskFunction RunFunction { get; set; }
+        IProcess Process { get; set; }
 
         /// <summary>
-        /// A collection of value elements that are used during the run process. 
+        /// The actual function that is executed during the run process.  
         /// </summary>
-        IValue[] Values { get; set; }
+        IFunction RunFunction { get; set; }
 
         /// <summary>
-        /// Returns the value contained in the task with the specified name.
+        /// A collection of input view elements that are used during the run process. 
+        /// </summary>
+        IValueView[] Inputs { get; set; }
+
+        /// <summary>
+        /// Returns the input view contained in the task with the specified name.
+        /// </summary>
+        /// <param name="name">The case-insensitive name of the input view.</param>
+        /// <returns>The specified view or <code>Undefined.View</code> if no input exists.</returns>
+        IValueView GetInput(string name);
+
+        /// <summary>
+        /// A collection of output value elements that are populated during the run process. 
+        /// </summary>
+        /// <remarks>
+        /// If more than one task will be modifying an output value, the value should be physically 
+        /// located at the parent level (like the process), and a pointer to that value element is 
+        /// placed in the task.
+        /// </remarks>
+        IValue[] Outputs { get; set; }
+
+        /// <summary>
+        /// Returns the output value contained in the task with the specified name.
         /// </summary>
         /// <param name="name">The case-insensitive name of the value.</param>
         /// <returns>The specified value or <code>Undefined.Value</code> if no value exists.</returns>
-        IValue GetValue(string name);
-    }
-
-    /// <summary>
-    /// A generic interface that indicates whether an element has conditions indicating
-    /// when it can start executing and stop executing.
-    /// </summary>
-    public interface IStartable
-    {
-        /// <summary>
-        /// The condition that must be met to start running an element.
-        /// </summary>
-        ICondition StartCondition { get; set; }
+        IValue GetOutput(string name);
 
         /// <summary>
-        /// The condition that must be met to stop running an element.
+        /// Cancels a running task.
         /// </summary>
-        ICondition StopCondition { get; set; }
+        void Cancel();
     }
 
     /// <summary>
     /// An element that represents an event that takes place on a process.
-    /// <para>Note that this is the generic definition which does not include a way
-    /// for information to be passed into/send out from the process.</para>
     /// </summary>
-    public interface IEvent : IElement
+    /// <remarksNote that this is the generic definition which does not include a way
+    /// for information to be passed into/send out from the process.</remarks>
+    public interface IEvent : ICondition
     {
         /// <summary>
         /// The process containing the event.
         /// </summary>
         IProcess Process { get; set; }
-
-        /// <summary>
-        /// The condition that must be met before the event is triggered.
-        /// </summary>
-        ICondition StartCondition { get; }
-    }
-
-    /// <summary>
-    /// An event element that allows for value elements to be brought into or sent out
-    /// from the process.
-    /// </summary>
-    public interface IMessageEvent : IEvent
-    {
-        /// <summary>
-        /// The message associated with the event.
-        /// </summary>
-        IMessage Message { get; }
     }
 
     /// <summary>
     /// An element that contains a task as a script that run while the task is running. 
     /// </summary>
-    public interface ITask : IRunnable, IStartable
+    public interface ITask : IRunnable
     {
         /// <summary>
-        /// The function script that is to be run.  The container where this task 
-        /// resides determines how to process the script.
+        /// The condition that must be met to start running the task element.
         /// </summary>
-        string FunctionText { get; set; }
+        ICondition StartCondition { get; set; }
 
         /// <summary>
-        /// Returns the value containing the result from running the function script.
+        /// The condition that must be met to stop running the task element.
         /// </summary>
-        IValue RunResult { get; }
+        ICondition StopCondition { get; set; }
     }
 
     /// <summary>
@@ -269,20 +248,6 @@ namespace Atomic.Core
         /// Returns if the condition has been met.
         /// </summary>
         bool Met { get; }
-    }
-
-    /// <summary>
-    /// A task element that contains a group of related tasks as an activity.
-    /// </summary>
-    /// <remarks>An activity allows for encapsulating tasks, preventing other tasks from
-    /// accessing internal task states and values.  To make such information known, these
-    /// values can be linked to the activity value collection.</remarks>
-    public interface IActivity : ITask
-    {
-        /// <summary>
-        /// A collection of tasks in the activity.
-        /// </summary>
-        ITask[] Tasks { get; set; }
     }
 
     /// <summary>
@@ -310,37 +275,57 @@ namespace Atomic.Core
         IEvent[] Events { get; set; }
 
         /// <summary>
+        /// Returns the event with the specified case-insenstivie name.
+        /// </summary>
+        /// <param name="name">The name of the event to return.</param>
+        /// <returns>The event with the specified name.</returns>
+        IEvent GetEvent(string name);
+
+        /// <summary>
         /// A collection of tasks that can run while the process is running.
         /// </summary>
         ITask[] Tasks { get; set; }
+
+        /// <summary>
+        /// Returns the task with the specified case-insensitive name.
+        /// </summary>
+        /// <param name="name">The name of the task to return.</param>
+        /// <returns>
+        /// The task with the specified name, or <code>Undefined.Task</code> 
+        /// if it does not exist.
+        /// </returns>
+        ITask GetTask(string name);
 
         /// <summary>
         /// A condition that must be met for the process to complete.
         /// </summary>
         ICondition DoneCondition { get; set; }
 
+        /// <summary>
+        /// Returns the container to use for the specified task type.
+        /// </summary>
+        /// <param name="taskType">The task type associated with a container.</param>
+        /// <returns>The container associated with the task type, or <code>Undefined.Container</code>
+        /// if no association exists or the type is not a task type.
+        /// </returns>
         IContainer GetContainer(Type taskType);
 
+        /// <summary>
+        /// Sets the container to use for the specified task type.
+        /// </summary>
+        /// <param name="taskType">The task type to associate to a container.</param>
+        /// <param name="container">The container to use for the task type.</param>
+        /// <remarks>The execution engine will have a default list of task type to container.  This
+        /// is only used when a certain process needs a specific container, like a SQL Server 
+        /// database connection instead of the default Oracle database connection.
+        /// <para>If the type specified is not a task type, no association is set.</para>
+        /// </remarks>
         void SetContainer(Type taskType, IContainer container);
-    }
-
-    /// <summary>
-    /// An element that holds a collection of parameters used to transport information
-    /// between processes.
-    /// </summary>
-    public interface IMessage : IElement
-    {
-        /// <summary>
-        /// Gets the value element associated with the specific name.
-        /// </summary>
-        /// <param name="name">The case-insensitive name of a parameter in the message.</param>
-        /// <returns>An event parameter structure holding the parameter value and type.</returns>
-        IParameter GetParameter(string name);
 
         /// <summary>
-        /// A list of parameter names held in the message.
+        /// Resets the modified flag of output values
         /// </summary>
-        string[] ParameterNames { get; }
+        void ResetValues();
     }
 
     /// <summary>
@@ -362,44 +347,33 @@ namespace Atomic.Core
         Done
     }
 
-    public interface IDataAccessContainer : IContainer
-    {
-        void Read(IMessage message);
-
-        void Write(IMessage message);
-    }
-
-    public interface IDataDefinitionContainer : IContainer
-    {
-        void Create(IMessage message);
-
-        void Modify(IMessage message);
-
-        void Delete(IMessage message);
-
-        void Move(IMessage message);
-
-        void Copy(IMessage message);
-
-        void Open(IMessage message);
-
-        void Close(IMessage message);
-
-        void List(IMessage message);
-    }
-
-    public interface IDataManipulationContainer : IContainer
-    {
-        IValue[] Select(IMessage message);
-
-        void Update(IMessage message);
-
-        void Delete(IMessage message);
-    }
 
     /// <summary>
-    /// The delegate signature for task functions.
+    /// A definition for a generic runtime container.  This container will provide 
+    /// the proper operating system response to task script definitions.
     /// </summary>
-    /// <param name="task"></param>
-    public delegate void TaskFunction(IRunnable task);
+    public interface IContainer : IElement
+    {
+        /// <summary>
+        /// A list of processes held in this container.
+        /// </summary>
+        ITask[] Tasks { get; }
+
+        /// <summary>
+        /// Adds a process to this container.
+        /// </summary>
+        /// <param name="process">A process containing tasks to execute in this container.</param>
+        void AddProcess(IProcess process);
+
+        /// <summary>
+        /// Removes a process from this container.
+        /// </summary>
+        /// <param name="process">A process containing tasks to execute in this container.</param>
+        void RemoveProcess(IProcess process);
+
+        /// <summary>
+        /// Executes all the held processes in the container.
+        /// </summary>
+        void Run();
+    }
 }

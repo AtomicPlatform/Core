@@ -23,8 +23,6 @@ namespace Atomic.Loader
         }
     }
 
-
-
     abstract public class ElementModel<T> : IElementModel<T> where T : IElement
     {
         [XmlAttribute(AttributeName = "id")]
@@ -33,7 +31,7 @@ namespace Atomic.Loader
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
 
-        virtual public void Import(ProcessModel model, T item)
+        virtual public void Import(IProcessModel model, T item)
         {
             ID = item.ID;
             Name = item.Name;
@@ -49,7 +47,7 @@ namespace Atomic.Loader
 
         abstract protected T GetElement(ExportRegistry reg);
 
-        protected RefIdModel CreateConditionReference(ProcessModel model, ICondition cond)
+        protected RefIdModel CreateConditionReference(IProcessModel model, ICondition cond)
         {
             ConditionModel condModel = model.AddCondition(cond);
 
@@ -59,7 +57,7 @@ namespace Atomic.Loader
             return idModel;
         }
 
-        protected RefIdModel CreateTaskReference(ProcessModel model, IRunnable task)
+        protected RefIdModel CreateTaskReference(IProcessModel model, IRunnable task)
         {
             if (task is IProcess)
             {
@@ -74,7 +72,7 @@ namespace Atomic.Loader
             return idModel;
         }
 
-        protected RefIdModel CreateValueReference(ProcessModel model, IValue value)
+        protected RefIdModel CreateValueReference(IProcessModel model, IValue value)
         {
             ValueModel valModel = model.AddValue(value);
             RefIdModel idModel = new RefIdModel();
@@ -83,7 +81,7 @@ namespace Atomic.Loader
             return idModel;
         }
 
-        protected RefIdModel CreateFunctionReference(ProcessModel model, IFunction func)
+        protected RefIdModel CreateFunctionReference(IProcessModel model, IFunction func)
         {
             FunctionModel funcModel = model.AddFunction(func);
             RefIdModel idModel = new RefIdModel();
@@ -108,7 +106,7 @@ namespace Atomic.Loader
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
 
-        internal EventModel AddEvent(IEvent evt)
+        public EventModel AddEvent(IEvent evt)
         {
             EventModel evtModel = null;
             if (_events.ContainsKey(evt.ID))
@@ -123,7 +121,7 @@ namespace Atomic.Loader
             return evtModel;
         }
 
-        internal TaskModel AddTask(ITask task)
+        public TaskModel AddTask(ITask task)
         {
             TaskModel taskModel = null;
             if (_tasks.ContainsKey(task.ID))
@@ -138,7 +136,7 @@ namespace Atomic.Loader
             return taskModel;
         }
 
-        internal ConditionModel AddCondition(ICondition cond)
+        public ConditionModel AddCondition(ICondition cond)
         {
             ConditionModel condModel = null;
             if (_conditions.ContainsKey(cond.ID))
@@ -153,7 +151,7 @@ namespace Atomic.Loader
             return condModel;
         }
 
-        internal ValueModel AddValue(IValue val)
+        public ValueModel AddValue(IValue val)
         {
             ValueModel valModel = null;
             if (_conditions.ContainsKey(val.ID))
@@ -168,7 +166,7 @@ namespace Atomic.Loader
             return valModel;
         }
 
-        internal FunctionModel AddFunction(IFunction func)
+        public FunctionModel AddFunction(IFunction func)
         {
             FunctionModel funcModel = null;
             if (_functions.ContainsKey(func.ID))
@@ -280,7 +278,7 @@ namespace Atomic.Loader
                 AddTask(task);
             }
 
-            foreach (IValue v in process.Values)
+            foreach (IValue v in process.Inputs)
             {
                 AddValue(v);
             }
@@ -389,10 +387,10 @@ namespace Atomic.Loader
             set { _type = value; }
         }
 
-        override public void Import(ProcessModel model, IEvent evt)
+        override public void Import(IProcessModel model, IEvent evt)
         {
             base.Import(model, evt);
-            StartCondition = CreateConditionReference(model, evt.StartCondition);
+            StartCondition = CreateConditionReference(model, evt);
             if (evt is StartEvent)
             {
                 EventType = StartEventType;
@@ -429,7 +427,7 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "method", Namespace="")]
         public string MethodName { get; set; }
 
-        public override void Import(ProcessModel model, IFunction item)
+        public override void Import(IProcessModel model, IFunction item)
         {
             base.Import(model, item);
             
@@ -530,12 +528,12 @@ namespace Atomic.Loader
             set { if (value == null) value = ""; _taskType = value; }
         }
 
-        override public void Import(ProcessModel model, ITask task)
+        override public void Import(IProcessModel model, ITask task)
         {
             base.Import(model, task);
             if (task is ITask)
             {
-                RunScript = ((ITask)task).FunctionText;
+                RunScript = ((ITask)task).RunFunction.FunctionText;
             }
 
             StartCondition = CreateConditionReference(model, task.StartCondition);
@@ -584,7 +582,7 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "conditionType", Namespace = "")]
         public string ConditionType { get; set; }
 
-        override public void Import(ProcessModel model, ICondition cond)
+        override public void Import(IProcessModel model, ICondition cond)
         {
             base.Import(model, cond);
 
@@ -640,7 +638,7 @@ namespace Atomic.Loader
         [XmlElement(ElementName = "valueType", Namespace = "")]
         public string ValueType { get; set; }
 
-        override public void Import(ProcessModel model, IValue v)
+        override public void Import(IProcessModel model, IValue v)
         {
             base.Import(model, v);
             Value = v.Value.ToString();

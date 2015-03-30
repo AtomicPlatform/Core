@@ -52,7 +52,7 @@ namespace Atomic.Loader
         /// </summary>
         /// <param name="model">The process model containing this element model.</param>
         /// <param name="item">The core element to import into the model.</param>
-        void Import(ProcessModel model, T item);
+        void Import(IProcessModel model, T item);
 
         /// <summary>
         /// Exports a core element from the model using the specified export registry.
@@ -122,5 +122,15 @@ namespace Atomic.Loader
         /// </summary>
         /// <returns>The process element represented by the model.</returns>
         IProcess Export();
+
+        ConditionModel AddCondition(ICondition cond);
+
+        EventModel AddEvent(IEvent evt);
+
+        FunctionModel AddFunction(IFunction func);
+
+        TaskModel AddTask(ITask task);
+
+        ValueModel AddValue(IValue value);
     }
 }

@@ -55,22 +55,33 @@ namespace Atomic.Core
         }
     }
 
-    abstract public class ValueView<T> : AtomicValue, IValueView<T>
+    abstract public class ValueView<T> : AtomicView, IValueView<T>
     {
         private IValue _sourceValue = Undefined.Value;
 
         public IValue SourceValue
         {
             get { return _sourceValue; }
-            set { _sourceValue = value; }
+            set 
+            { 
+                _sourceValue = value;
+                if (Name == ElementName + GetHashCode()) Name = SourceValue.Name;
+            }
         }
 
-        abstract new public T Value { get; }
+        public bool Required { get; set; }
+
+        public override object Value
+        {
+            get { return ViewValue; }
+        }
+
+        abstract public T ViewValue { get; } 
     }
 
     public class TextView : ValueView<string>
     {
-        public override string Value
+        public override string ViewValue
         {
             get { return SourceValue.Value.ToString(); }
         }
@@ -78,7 +89,7 @@ namespace Atomic.Core
 
     public class NumberView : ValueView<double>
     {
-        public override double Value
+        public override double ViewValue
         {
             get 
             {
@@ -94,14 +105,23 @@ namespace Atomic.Core
 
     public class IndexView : ValueView<int>
     {
-        public override int Value
+        public override int ViewValue
         {
             get
             {
+                if (SourceValue.Value == null) return 0;
+
                 int i = 0;
                 string textValue = SourceValue.Value.ToString();
 
-                bool valid = Int32.TryParse(textValue, out i);
+                double d = 0.0;
+                bool valid = Double.TryParse(textValue, out d);
+
+                if (valid)
+                {
+                    i = (int)Math.Round(d);
+                }
+                //valid = Int32.TryParse(textValue, out i);
 
                 return i;
             }
@@ -110,7 +130,7 @@ namespace Atomic.Core
 
     public class BooleanView : ValueView<bool>
     {
-        public override bool Value
+        public override bool ViewValue
         {
             get { return SourceValue != Undefined.Value; }
         }
@@ -118,7 +138,7 @@ namespace Atomic.Core
 
     public class ListView : ValueView<object[]>
     {
-        public override object[] Value
+        public override object[] ViewValue
         {
             get 
             { 
@@ -144,7 +164,7 @@ namespace Atomic.Core
 
     public class MapValue : ValueView<IDictionary<string, object>>
     {
-        public override IDictionary<string, object> Value
+        public override IDictionary<string, object> ViewValue
         {
             get 
             {
@@ -189,9 +209,13 @@ namespace Atomic.Core
 
         public IndexView Index { get; set; }
 
-        public override object Value
+        public override object ViewValue
         {
-            get { return SourceValue.Value[Index.Value]; }
+            get 
+            { 
+                int index = Index.ViewValue;
+                return SourceValue.ViewValue[index]; 
+            }
         }
     }
 
@@ -201,15 +225,15 @@ namespace Atomic.Core
 
         public TextView Key { get; set; }
 
-        public override object Value
+        public override object ViewValue
         {
-            get { return SourceValue.Value[Key.Value]; }
+            get { return SourceValue.ViewValue[Key.ViewValue]; }
         }
     }
 
     public class TaskView : ValueView<IRunnable>, IRunnable
     {
-        public override IRunnable Value
+        public override IRunnable ViewValue
         {
             get
             {
@@ -226,30 +250,257 @@ namespace Atomic.Core
 
         public void Run()
         {
-            Value.Run();
+            ViewValue.Run();
         }
 
         public RunState CurrentState
         {
-            get { return Value.CurrentState; }
+            get { return ViewValue.CurrentState; }
         }
 
-        public TaskFunction RunFunction
+        public IFunction RunFunction
         {
-            get { return Value.RunFunction; }
+            get { return ViewValue.RunFunction; }
             set { }
         }
 
-        public IValue[] Values
+        public string FunctionText
         {
-            get { return Value.Values; }
-            set { }
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public IValue GetValue(string name)
+        public IValueView[] Inputs
         {
-            return Value.GetValue(name);
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValueView GetInput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IValue[] Outputs
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValue GetOutput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Cancel()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IProcess Process
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
+    public class ProcessView : ValueView<IProcess>, IProcess
+    {
+        public override IProcess ViewValue
+        {
+            get 
+            {
+                IProcess p = Undefined.Process;
+                if (SourceValue is IProcess)
+                {
+                    p = (IProcess)SourceValue;
+                }
+
+                return p;
+            }
+        }
+
+        public IEvent StartEvent
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IEvent StopEvent
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IEvent[] Events
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IEvent GetEvent(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ITask[] Tasks
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
+        public ITask GetTask(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICondition DoneCondition
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IContainer GetContainer(Type taskType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetContainer(Type taskType, IContainer container)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Run()
+        {
+            throw new NotImplementedException();
+        }
+
+        public RunState CurrentState
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IFunction RunFunction
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string FunctionText
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValueView[] Inputs
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValueView GetInput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IValue[] Outputs
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IValue GetOutput(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResetValues()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Cancel()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public IProcess Process
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
 }

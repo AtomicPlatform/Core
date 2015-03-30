@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conditions.cs" />
+    <Compile Include="Containers.cs" />
     <Compile Include="CoreElements.cs" />
     <Compile Include="CoreFunctions.cs" />
     <Compile Include="CoreInterfaces.cs" />

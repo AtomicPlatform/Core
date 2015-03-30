@@ -6,6 +6,38 @@ using System.Threading.Tasks;
 
 namespace Atomic.Core
 {
+
+    /// <summary>
+    /// An element that holds a collection of parameters used to transport information
+    /// between processes.
+    /// </summary>
+    public interface IMessage : IElement
+    {
+        /// <summary>
+        /// Gets the value element associated with the specific name.
+        /// </summary>
+        /// <param name="name">The case-insensitive name of a parameter in the message.</param>
+        /// <returns>An event parameter structure holding the parameter value and type.</returns>
+        IValue GetParameter(string name);
+
+        /// <summary>
+        /// A list of parameter names held in the message.
+        /// </summary>
+        string[] ParameterNames { get; }
+    }
+
+    /// <summary>
+    /// An event element that allows for value elements to be brought into or sent out
+    /// from the process.
+    /// </summary>
+    public interface IMessageEvent : IEvent
+    {
+        /// <summary>
+        /// The message associated with the event.
+        /// </summary>
+        IMessage Message { get; }
+    }
+
     public class StartEvent : AtomicEvent
     {
         public StartEvent()
@@ -13,13 +45,9 @@ namespace Atomic.Core
             Name = "_start";
         }
 
-        protected override void InitializeStartCondition()
+        public override bool Met
         {
-            StartCondition = new ValueCondition()
-            {
-                Value = new TaskStateView() { Task = Process },
-                ExpectedValue = new AtomicValue() { Value = RunState.Ready }
-            };
+            get { return Process.CurrentState == RunState.Ready; }
         }
     }
 
@@ -30,20 +58,15 @@ namespace Atomic.Core
             Name = "_stop";
         }
 
-        protected override void InitializeStartCondition()
+        public override bool Met
         {
-            StartCondition = Process.DoneCondition;
-        }
-
-        internal void UpdateCondition(ICondition cond)
-        {
-            StartCondition = cond;
+            get { return Process.DoneCondition.Met; }
         }
     }
 
     public class MessageEvent : AtomicEvent, IMessageEvent
     {
-        private IMessage _message = Undefined.Message;
+        private IMessage _message = null; //Undefined.Message;
 
         public MessageEvent()
         {
@@ -55,15 +78,9 @@ namespace Atomic.Core
             set { _message = value; }
         }
 
-        protected override void InitializeStartCondition()
+        public override bool Met
         {
-            StartCondition = new ValueCondition()
-            {
-                Name = "Message Start Condition",
-                Value = new AtomicValue() { Value = Message },
-                ExpectedValue = new AtomicValue() { Value = Undefined.Message },
-                MetFunction = ValueCondition.NotEqualsFunction
-            };
+            get { return _message != null; } // Undefined.Message; }
         }
     }
 }
