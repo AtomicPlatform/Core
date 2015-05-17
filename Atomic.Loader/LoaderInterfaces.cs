@@ -35,18 +35,13 @@ namespace Atomic.Loader
     /// type of element from the core library.  
     /// </summary>
     /// <typeparam name="T">the core element type to import and export</typeparam>
-    public interface IElementModel<T> where T : IElement
+    public interface IElementModel<T> : IElement where T : IElement
     {
-        /// <summary>
-        /// The element identifier used in references by other element models.
-        /// </summary>
-        string ID { get; set; }
+        new string ID { get; set; }
 
-        /// <summary>
-        /// The name assigned to the core element.
-        /// </summary>
-        string Name { get; set; }
+        T Element { get; set; }
 
+        /*
         /// <summary>
         /// Imports a core element into this model using the specified process model.
         /// </summary>
@@ -60,6 +55,31 @@ namespace Atomic.Loader
         /// <param name="reg">The registry containing all the core element references in the process model.</param>
         /// <returns></returns>
         T Export(ExportRegistry reg);
+         * */
+    }
+
+    public interface IFunctionModel : IElementModel<IFunction>
+    {
+        string AssemblyName { get; set; }
+
+        string ModuleName { get; set; }
+
+        string MethodName { get; set; }
+    }
+
+    public interface IConditionModel : IElementModel<ICondition>
+    {
+        string FunctionID { get; set; }
+
+        string ConditionType { get; set; }
+
+        string TaskID { get; set; }
+
+        string ExpectedState { get; set; }
+
+        string ValueID { get; set; }
+
+        string ExpectedValue { get; set; }
     }
 
     /// <summary>
@@ -131,6 +151,8 @@ namespace Atomic.Loader
 
         TaskModel AddTask(ITask task);
 
-        ValueModel AddValue(IValue value);
+        ValueModel AddValue(IValue value, string parameterType = "");
+
+        ContainerModel AddContainer(IContainer container);
     }
 }

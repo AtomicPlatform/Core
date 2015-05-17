@@ -208,6 +208,11 @@ namespace Atomic.Core
         /// Cancels a running task.
         /// </summary>
         void Cancel();
+
+        /// <summary>
+        /// Returns if the runnable has changed states.
+        /// </summary>
+        bool Modified { get; }
     }
 
     /// <summary>
@@ -302,27 +307,6 @@ namespace Atomic.Core
         ICondition DoneCondition { get; set; }
 
         /// <summary>
-        /// Returns the container to use for the specified task type.
-        /// </summary>
-        /// <param name="taskType">The task type associated with a container.</param>
-        /// <returns>The container associated with the task type, or <code>Undefined.Container</code>
-        /// if no association exists or the type is not a task type.
-        /// </returns>
-        IContainer GetContainer(Type taskType);
-
-        /// <summary>
-        /// Sets the container to use for the specified task type.
-        /// </summary>
-        /// <param name="taskType">The task type to associate to a container.</param>
-        /// <param name="container">The container to use for the task type.</param>
-        /// <remarks>The execution engine will have a default list of task type to container.  This
-        /// is only used when a certain process needs a specific container, like a SQL Server 
-        /// database connection instead of the default Oracle database connection.
-        /// <para>If the type specified is not a task type, no association is set.</para>
-        /// </remarks>
-        void SetContainer(Type taskType, IContainer container);
-
-        /// <summary>
         /// Resets the modified flag of output values
         /// </summary>
         void ResetValues();
@@ -363,13 +347,13 @@ namespace Atomic.Core
         /// Adds a process to this container.
         /// </summary>
         /// <param name="process">A process containing tasks to execute in this container.</param>
-        void AddProcess(IProcess process);
+        void Add(IProcess process, ITask[] tasks = null);
 
         /// <summary>
         /// Removes a process from this container.
         /// </summary>
         /// <param name="process">A process containing tasks to execute in this container.</param>
-        void RemoveProcess(IProcess process);
+        void Remove(IProcess process);
 
         /// <summary>
         /// Executes all the held processes in the container.

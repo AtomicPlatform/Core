@@ -56,6 +56,13 @@
     <Compile Include="Core\FunctionTests.cs" />
     <Compile Include="Core\ProcessTests.cs" />
     <Compile Include="Loader\JsonConverterTests.cs" />
+    <Compile Include="Loader\ConditionModelTests.cs" />
+    <Compile Include="Loader\ContainerModelTests.cs" />
+    <Compile Include="Loader\EventModelTests.cs" />
+    <Compile Include="Loader\FunctionModelTests.cs" />
+    <Compile Include="Loader\ProcessModelTests.cs" />
+    <Compile Include="Loader\TaskModelTests.cs" />
+    <Compile Include="Loader\ValueModelTests.cs" />
     <Compile Include="Loader\XmlConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ViewTests.cs" />

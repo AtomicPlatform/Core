@@ -105,9 +105,9 @@ namespace Atomic.Core
             get { return _tasks; }
         }
 
-        public void AddProcess(IProcess process) { }
+        public void Add(IProcess process, ITask[] task = null) { }
 
-        public void RemoveProcess(IProcess process) { }
+        public void Remove(IProcess process) { }
 
         public void Run() { }
     }
@@ -165,6 +165,7 @@ namespace Atomic.Core
         private ITask[] _tasks = new ITask[0];
         private IValue[] _outputs = new IValue[0];
         private IValueView[] _inputs = new IValueView[0];
+        private IContainer[] _containers = new IContainer[0];
 
         public IEvent StartEvent
         {
@@ -205,6 +206,11 @@ namespace Atomic.Core
         }
 
         public void SetContainer(Type taskType, IContainer container) { }
+
+        public IContainer[] Containers
+        {
+            get { return _containers; }
+        }
 
         public void Run() { }
 
@@ -261,6 +267,11 @@ namespace Atomic.Core
         {
             get { return Undefined.Process; }
             set { }
+        }
+
+        public bool Modified 
+        {
+            get { return false; }
         }
     }
 
@@ -340,6 +351,11 @@ namespace Atomic.Core
         }
 
         public void Cancel() { }
+
+        public bool Modified
+        {
+            get { return false; }
+        }
     }
 
     class UndefinedValue : UndefinedElement, IValue

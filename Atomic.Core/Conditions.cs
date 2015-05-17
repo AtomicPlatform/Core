@@ -40,7 +40,7 @@ namespace Atomic.Core
 
     public class TaskCondition : AtomicCondition
     {
-        static public bool DefaultFunction(TaskCondition cond)
+        static public bool EqualsFunction(TaskCondition cond)
         {
             return cond.Task.CurrentState == cond.State;
         }
@@ -50,7 +50,7 @@ namespace Atomic.Core
 
         public TaskCondition()
         {
-            Func<TaskCondition, bool> func = TaskCondition.DefaultFunction;
+            Func<TaskCondition, bool> func = TaskCondition.EqualsFunction;
             FunctionElement = new AtomicFunction(func.GetMethodInfo());
         }
 
@@ -121,16 +121,6 @@ namespace Atomic.Core
             set
             {
                 FunctionElement = new AtomicFunction(value.GetMethodInfo());
-            }
-        }
-
-        public override string Name
-        {
-            get { return base.Name; }
-            set
-            {
-                base.Name = value;
-                if (FunctionElement != null) FunctionElement.Name = base.Name + "_func";
             }
         }
 

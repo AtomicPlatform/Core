@@ -11,8 +11,19 @@ namespace Atomic.Core
 
     abstract public class AtomicContainer : AtomicElement, IContainer
     {
-        private IDictionary<IProcess, ITask[]> _tasks = new Dictionary<IProcess, ITask[]>();
-        private List<ContainerCommand> _commandList = new List<ContainerCommand>();
+        private IDictionary<IProcess, MethodInfo> _processes = new Dictionary<IProcess, MethodInfo>();
+        private IDictionary<ITask, MethodInfo> _tasks = new Dictionary<ITask, MethodInfo>();
+
+        static protected string ParseTask(IRunnable task, out string[] tokens)
+        {
+            tokens = task.RunFunction.FunctionTokens;
+
+            // find parameters and replace with id values
+            tokens[1] = SubstituteValues(tokens[1], task);
+
+            // display the final text
+            return UnQuoteText(tokens[1]);
+        }
 
         static protected string SubstituteValues(string text, IRunnable task)
         {
@@ -21,7 +32,7 @@ namespace Atomic.Core
             foreach (IValue inputValue in task.Inputs)
             {
                 TextView view = (TextView)inputValue;
-                buffer.Replace("${" + view.ID + "}", view.ViewValue);
+                buffer.Replace("$[" + view.ID + "]", view.ViewValue);
             }
 
             return buffer.ToString();
@@ -34,53 +45,110 @@ namespace Atomic.Core
 
         public ITask[] Tasks
         {
-            get
-            {
-                List<ITask> taskList = new List<ITask>();
-                foreach (ITask[] tasks in _tasks.Values)
-                {
-                    taskList.AddRange(tasks);
-                }
-
-                return taskList.ToArray();
-            }
+            get { return _tasks.Keys.ToArray(); }
         }
 
-        public void AddProcess(IProcess process)
+        public IProcess[] Processes
         {
-            List<ITask> taskList = new List<ITask>();
-            process.Locked = true;
+            get { return _processes.Keys.ToArray(); }
+        }
 
+        public void Add(IProcess process, ITask[] tasks = null)
+        {
             if (!process.Locked) return;
 
-            foreach (ITask task in process.Tasks)
+            if (!_processes.ContainsKey(process))
             {
-                MethodInfo meth = GenerateMethod(task.RunFunction);
-                if (meth != null)
+                RegisterProcess(process);
+
+                if (tasks == null) tasks = process.Tasks;
+                foreach (ITask task in tasks)
                 {
-                    AtomicFunction func = (AtomicFunction)task.RunFunction;
-                    func.Method = meth;
-                    taskList.Add(task);
+                    RegisterTask(task);
                 }
             }
-
-            _tasks[process] = taskList.ToArray();
         }
 
-        public void RemoveProcess(IProcess process)
+        public void Remove(IProcess process)
         {
-            _tasks.Remove(process);
-        }
-
-        virtual public void Run()
-        {
-            foreach (ITask task in Tasks.Where(x => x.CurrentState == RunState.Running))
+            foreach (ITask task in process.Tasks)
             {
-                task.Run();
+                if (_tasks.ContainsKey(task))
+                {
+                    _tasks.Remove(task);
+                }
+             }
+
+            _processes.Remove(process);
+        }
+
+        public void Run()
+        {
+            IProcess[] runProcesses = GetRunnableProcesses();
+            foreach (IProcess process in runProcesses)
+            {
+                RunProcess(process);
+            }
+
+            ITask[] runTasks = GetRunnableTasks();
+            foreach (ITask task in runTasks)
+            {
+                RunTask(task);
             }
         }
 
-        abstract protected MethodInfo GenerateMethod(IFunction func);
+        protected void RunTask(ITask task)
+        {
+            MethodInfo meth = _tasks[task];
+            meth.Invoke(null, new object[] { task });
+        }
+
+        protected void RunProcess(IProcess process)
+        {
+            MethodInfo meth = _processes[process];
+            meth.Invoke(null, new object[] { process });
+        }
+
+        virtual protected MethodInfo GenerateMethod(IFunction func) 
+        { 
+            return AtomicRunnable.DefaultFunction.GetMethodInfo(); 
+        }
+
+        virtual protected MethodInfo GenerateMethod(IProcess process) 
+        { 
+            return AtomicRunnable.DefaultFunction.GetMethodInfo(); 
+        }
+
+        virtual protected IProcess[] GetRunnableProcesses()
+        {
+            return new IProcess[0];
+        }
+
+        virtual protected ITask[] GetRunnableTasks()
+        {
+            return Tasks.Where(x => x.CurrentState == RunState.Running).ToArray();
+        }
+
+        protected override string ElementName
+        {
+            get { return "container"; }
+        }
+
+        private void RegisterProcess(IProcess process)
+        {
+            MethodInfo meth = GenerateMethod(process);
+            if (meth == null) meth = AtomicRunnable.DefaultFunction.GetMethodInfo();
+
+            _processes[process] = meth; 
+        }
+
+        private void RegisterTask(ITask task)
+        {
+            MethodInfo meth = GenerateMethod(task.RunFunction);
+            if (meth == null) meth = AtomicRunnable.DefaultFunction.GetMethodInfo();
+
+            _tasks[task] = meth;
+        }
     };
 
     public class AtomicElement : IElement
@@ -497,6 +565,16 @@ namespace Atomic.Core
         {
             get { return "condition"; }
         }
+
+        public override string Name
+        {
+            get { return base.Name; }
+            set
+            {
+                base.Name = value;
+                if (FunctionElement != null) FunctionElement.Name = base.Name + "_func";
+            }
+        }
     }
 
 
@@ -525,10 +603,55 @@ namespace Atomic.Core
 
     abstract public class AtomicRunnable : AtomicElement, IRunnable
     {
+        static public TaskFunction DefaultFunction = DoNothing;
+
+        private static void DoNothing(IRunnable task) { }
+
+        // problem - entered state triggers twice, once as entering and once for exiting....
+        // need to implement something like the resetvalues of AtomicProcess
+        // for now, disable...
+        /*
+        static public ICondition EnteredStateCondition(IRunnable task, RunState runState)
+        {
+            return new RuleCondition()
+            {
+                Conditions = new ICondition[] {
+                    new ValueCondition() {
+                        Value = new TaskCurrentStateView() { Task = task }, 
+                        ExpectedValue = new AtomicValue() { Value = runState }, 
+                        MetFunction = ValueCondition.EqualsFunction
+                    }, 
+                    new ValueCondition() { 
+                        Value = new TaskStateModifiedView() { Task = task }, 
+                        ExpectedValue = new AtomicValue() { Value = true }, 
+                        MetFunction = ValueCondition.EqualsFunction
+                    }
+                }, 
+                MetFunction = RuleCondition.AllConditionsMet
+            };
+        }
+        */
+        static public ICondition AtStateCondition(IRunnable task, RunState runState)
+        {
+            return new ValueCondition()
+            {
+                Name = "Is Process Running",
+                MetFunction = ValueCondition.EqualsFunction,
+                Value = new TaskCurrentStateView() { Name = "Current " + task.Name + " State", Task = task },
+                ExpectedValue = new AtomicValue()
+                {
+                    Name = "Expected Process State",
+                    Value = runState
+                }
+            };
+        }
+
+
         private IDictionary<string, IValue> _outputs = new Dictionary<string, IValue>();
         private IDictionary<string, IValueView> _inputs = new Dictionary<string, IValueView>();
         private IFunction _func = Undefined.Function;
         private RunState _state = RunState.Ready;
+        private RunState _oldState = RunState.Ready;
 
         public IProcess Process { get; set; }
 
@@ -613,6 +736,17 @@ namespace Atomic.Core
                 }
             }
         }
+
+        public override void Update()
+        {
+            base.Update();
+            _oldState = CurrentState;
+        }
+
+        public bool Modified
+        {
+            get { return _oldState == CurrentState; }
+        }
     }
 
     abstract public class AtomicTask : AtomicRunnable, ITask
@@ -655,6 +789,8 @@ namespace Atomic.Core
 
         override public void Update()
         {
+            base.Update();
+
             switch (CurrentState)
             {
                 case RunState.Ready:
@@ -697,6 +833,7 @@ namespace Atomic.Core
         {
             get { return "task"; }
         }
+
     }
 
     public class AtomicProcess : AtomicRunnable, IProcess
@@ -710,27 +847,13 @@ namespace Atomic.Core
         private ICondition _doneCondition = Undefined.Condition;
         private IDictionary<Type, IContainer> _containers = new Dictionary<Type, IContainer>();
 
-        static public ICondition TaskStateCondition(IRunnable task, RunState runState)
-        {
-            return new ValueCondition()
-            {
-                Name = "Is Process Running",
-                MetFunction = ValueCondition.EqualsFunction,
-                Value = new TaskStateView() { Name = "Current " + task.Name + " State", Task = task },
-                ExpectedValue = new AtomicValue()
-                {
-                    Name = "Expected Process State",
-                    Value = runState
-                }
-            };
-        }
-
         public AtomicProcess()
         {
             _startEvent.Process = this;
             _stopEvent.Process = this;
-            DoneCondition = AtomicProcess.TaskStateCondition(this, RunState.Running);
+            DoneCondition = AtomicProcess.AtStateCondition(this, RunState.Running);
         }
+
 
         public IEvent StartEvent
         {
@@ -788,23 +911,6 @@ namespace Atomic.Core
             return (matchTask == null) ? Undefined.Task : matchTask;
         }
 
-        public IContainer GetContainer(Type taskType)
-        {
-            if (_containers.ContainsKey(taskType))
-            {
-                return _containers[taskType];
-            }
-            else
-            {
-                return Undefined.Container;
-            }
-        }
-
-        public void SetContainer(Type taskType, IContainer container)
-        {
-            _containers[taskType] = container;
-        }
-
         public override bool Locked
         {
             get { return base.Locked; }
@@ -833,6 +939,8 @@ namespace Atomic.Core
 
         override public void Update()
         {
+            base.Update();
+
             switch (CurrentState)
             {
                 case RunState.Ready:

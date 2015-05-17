@@ -11,8 +11,11 @@ namespace Atomic.Loader
         private IDictionary<string, ICondition> _conditions = new Dictionary<string, ICondition>();
         private IDictionary<string, IValue> _values = new Dictionary<string, IValue>();
         private IDictionary<string, IFunction> _functions = new Dictionary<string, IFunction>();
+        private IDictionary<string, IContainer> _containers = new Dictionary<string, IContainer>();
 
         private IDictionary<string, IProcess> _process = new Dictionary<string, IProcess>();
+
+        public ExportRegistry() { }
 
         /// <summary>
         /// Creates a collection of core elements based on the definitions contained in 
@@ -132,6 +135,11 @@ namespace Atomic.Loader
         public IFunction GetFunction(string id)
         {
             return _functions[id];
+        }
+
+        public IContainer GetContainer(string id)
+        {
+            return _containers[id];
         }
     }
 }

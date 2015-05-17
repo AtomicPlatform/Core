@@ -25,12 +25,57 @@ namespace Atomic.Loader
 
     abstract public class ElementModel<T> : IElementModel<T> where T : IElement
     {
+        private T _element = default(T);
+
         [XmlAttribute(AttributeName = "id")]
         public string ID { get; set; }
 
         [XmlAttribute(AttributeName = "name")]
         public string Name { get; set; }
 
+        virtual public T Element
+        {
+            get 
+            {
+                T element = CreateInstance();
+
+                element.Name = Name;
+                return element;
+            }
+            set
+            {
+                if (value == null) return;
+
+                Name = value.Name;
+                ID = value.ID;
+            }
+        }
+
+        abstract protected T CreateInstance();
+
+        public void Update()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Locked
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool IsValid
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        
         virtual public void Import(IProcessModel model, T item)
         {
             ID = item.ID;
@@ -89,6 +134,17 @@ namespace Atomic.Loader
 
             return idModel;
         }
+
+        protected RefIdModel CreateContainerReference(IProcessModel model, IContainer cont)
+        {
+            ContainerModel contModel = model.AddContainer(cont);
+            RefIdModel idModel = new RefIdModel();
+            idModel.ID = contModel.ID;
+
+            return idModel;
+        }
+        // * */
+
     }
 
     [XmlRoot(Namespace = "http://www.atomicplatform.com/Process", ElementName = "process")]
@@ -99,6 +155,7 @@ namespace Atomic.Loader
         private IDictionary<string, ConditionModel> _conditions = new Dictionary<string, ConditionModel>();
         private IDictionary<string, ValueModel> _values = new Dictionary<string, ValueModel>();
         private IDictionary<string, FunctionModel> _functions = new Dictionary<string, FunctionModel>();
+        private IDictionary<string, ContainerModel> _containers = new Dictionary<string, ContainerModel>();
 
         [XmlAttribute(AttributeName = "id")]
         public string ID { get; set; }
@@ -151,16 +208,16 @@ namespace Atomic.Loader
             return condModel;
         }
 
-        public ValueModel AddValue(IValue val)
+        public ValueModel AddValue(IValue val, string parameterType = "")
         {
             ValueModel valModel = null;
-            if (_conditions.ContainsKey(val.ID))
+            if (_values.ContainsKey(val.ID))
             {
                 valModel = _values[val.ID];
             }
             else
             {
-                valModel = CreateValueModel(val);
+                valModel = CreateInputModel(val);
             }
 
             return valModel;
@@ -184,6 +241,21 @@ namespace Atomic.Loader
             }
 
             return funcModel;
+        }
+
+        public ContainerModel AddContainer(IContainer cont)
+        {
+            ContainerModel contModel = null;
+            if (_containers.ContainsKey(cont.ID))
+            {
+                contModel = _containers[cont.ID];
+            }
+            else
+            {
+                contModel = CreateContainerModel(cont);
+            }
+
+            return contModel;
         }
 
         [XmlArray(ElementName = "events")]
@@ -280,7 +352,12 @@ namespace Atomic.Loader
 
             foreach (IValue v in process.Inputs)
             {
-                AddValue(v);
+                AddValue(v, ValueModel.Input);
+            }
+
+            foreach (IValue v in process.Outputs)
+            {
+                AddValue(v, ValueModel.Output);
             }
 
             // remove default references
@@ -309,6 +386,8 @@ namespace Atomic.Loader
         virtual protected TaskModel CreateTaskModel(ITask task)
         {
             TaskModel taskModel = new TaskModel() { ID = task.ID, Name = task.Name };
+            taskModel.TaskType = task.GetType().Name;
+
             _tasks[task.ID] = taskModel;
             taskModel.Import(this, task);
 
@@ -324,13 +403,22 @@ namespace Atomic.Loader
             return condModel;
         }
 
-        virtual protected ValueModel CreateValueModel(IValue val)
+        virtual protected ValueModel CreateInputModel(IValue val)
         {
             ValueModel valModel = new ValueModel() { ID = val.ID, Name = val.Name };
             _values[val.ID] = valModel;
             valModel.Import(this, val);
 
             return valModel;
+        }
+
+        virtual protected ContainerModel CreateContainerModel(IContainer cont)
+        {
+            ContainerModel contModel = new ContainerModel() { ID = cont.ID, Name = cont.Name };
+            _containers[cont.ID] = contModel;
+            contModel.Import(this, cont);
+
+            return contModel;
         }
 
         public IProcess Export()
@@ -413,10 +501,15 @@ namespace Atomic.Loader
         {
             return reg.GetEvent(ID);
         }
+
+        protected override IEvent CreateInstance()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [XmlRoot(ElementName="function")]
-    public class FunctionModel : ElementModel<IFunction>
+    public class FunctionModel : ElementModel<IFunction>, IFunctionModel
     {
         [XmlElement(ElementName = "assembly", Namespace="")]
         public string AssemblyName { get; set; }
@@ -426,6 +519,14 @@ namespace Atomic.Loader
 
         [XmlElement(ElementName = "method", Namespace="")]
         public string MethodName { get; set; }
+
+        [XmlElement(ElementName = "functionText", Namespace = "")]
+        public string FunctionText { get; set; }
+
+        protected override IFunction CreateInstance()
+        {
+            throw new NotImplementedException();
+        }
 
         public override void Import(IProcessModel model, IFunction item)
         {
@@ -499,6 +600,7 @@ namespace Atomic.Loader
         private RefIdModel _stopConditionID;
         private string _runScript = "";
         private string _taskType = "";
+        private ContainerModel _containerModel;
 
         [XmlElement(ElementName = "startOnCondition", Namespace = "")]
         public RefIdModel StartCondition
@@ -526,6 +628,17 @@ namespace Atomic.Loader
         {
             get { return _taskType; }
             set { if (value == null) value = ""; _taskType = value; }
+        }
+
+        public ContainerModel Container
+        {
+            get { return _containerModel; }
+            set { _containerModel = value; }
+        }
+
+        protected override ITask CreateInstance()
+        {
+            throw new NotImplementedException();
         }
 
         override public void Import(IProcessModel model, ITask task)
@@ -562,25 +675,40 @@ namespace Atomic.Loader
         }
     }
 
-    public class ConditionModel : ElementModel<ICondition>
+    public class ConditionModel : ElementModel<ICondition>, IConditionModel
     {
+        private string _taskID = "";
+
         [XmlElement(ElementName = "task", Namespace="")]
-        public RefIdModel Task { get; set; }
+        public string TaskID 
+        { 
+            get { return _taskID; }
+            set 
+            { 
+                if (value == null) value = "";
+                _taskID = value;
+            } 
+        }
 
         [XmlElement(ElementName = "value", Namespace="")]
-        public RefIdModel Value { get; set; }
+        public string ValueID { get; set; }
 
         [XmlElement(ElementName = "expectedValue", Namespace="")]
         public string ExpectedValue { get; set; }
 
         [XmlElement(ElementName = "function", Namespace="")]
-        public RefIdModel Function { get; set; }
+        public string FunctionID { get; set; }
 
         [XmlElement(ElementName = "state", Namespace="")]
-        public string State { get; set; }
+        public string ExpectedState { get; set; }
 
         [XmlElement(ElementName = "conditionType", Namespace = "")]
         public string ConditionType { get; set; }
+
+        protected override ICondition CreateInstance()
+        {
+            throw new NotImplementedException();
+        }
 
         override public void Import(IProcessModel model, ICondition cond)
         {
@@ -590,6 +718,7 @@ namespace Atomic.Loader
             {
                 TaskCondition taskCond = (TaskCondition)cond;
                 Task = CreateTaskReference(model, taskCond.Task);
+                Function = CreateFunctionReference(model, taskCond.FunctionElement);
                 State = taskCond.State.ToString();
                 ConditionType = "TaskCondition";
             }
@@ -619,10 +748,22 @@ namespace Atomic.Loader
         {
             return reg.GetCondition(ID);
         }
+
+        public RefIdModel Task { get; set; }
+
+        public RefIdModel Value { get; set; }
+
+        public RefIdModel Function { get; set; }
+
+        public string State { get; set; }
     }
 
     public class ValueModel : ElementModel<IValue>
     {
+        public const string Input = "Input";
+
+        public const string Output = "Output";
+
         [XmlElement(ElementName="initialValue", Namespace="")]
         public string Value { get; set; }
 
@@ -637,6 +778,17 @@ namespace Atomic.Loader
 
         [XmlElement(ElementName = "valueType", Namespace = "")]
         public string ValueType { get; set; }
+
+        [XmlElement(ElementName = "parameterType", Namespace = "")]
+        public string ParameterType { get; set; }
+
+        [XmlElement(ElementName = "required", Namespace = "")]
+        public bool Required { get; set; }
+
+        protected override IValue CreateInstance()
+        {
+            throw new NotImplementedException();
+        }
 
         override public void Import(IProcessModel model, IValue v)
         {
@@ -680,6 +832,36 @@ namespace Atomic.Loader
         protected override IValue GetElement(ExportRegistry reg)
         {
             return reg.GetValue(ID);
+        }
+    }
+
+    public class ContainerModel : ElementModel<IContainer>
+    {
+        [XmlElement(ElementName = "containerType", Namespace = "")]
+        public string ContainerType { get; set; }
+
+        override public void Import(IProcessModel model, IContainer c)
+        {
+            base.Import(model, c);
+            string className = c.GetType().Name;
+            ContainerType = className.Substring(className.LastIndexOf(".") + 1);
+        }
+
+        override public IContainer Export(ExportRegistry reg)
+        {
+            IContainer c = base.Export(reg);
+
+            return c;
+        }
+
+        protected override IContainer GetElement(ExportRegistry reg)
+        {
+            return reg.GetContainer(ID);
+        }
+
+        protected override IContainer CreateInstance()
+        {
+            throw new NotImplementedException();
         }
     }
 }

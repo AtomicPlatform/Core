@@ -23,7 +23,7 @@ namespace Atomic.Core
         }
     }
 
-    public class TaskStateView : AtomicView
+    abstract public class TaskStateView : AtomicView
     {
         private IRunnable _task = Undefined.Task;
 
@@ -32,10 +32,21 @@ namespace Atomic.Core
             get { return _task; }
             set { _task = value; }
         }
+    }
 
+    public class TaskCurrentStateView : TaskStateView
+    {
         public override object Value
         {
             get { return Task.CurrentState; }
+        }
+    }
+
+    public class TaskStateModifiedView : TaskStateView
+    {
+        public override object Value
+        {
+            get { return Task.Modified; }
         }
     }
 
@@ -410,6 +421,11 @@ namespace Atomic.Core
         public void SetContainer(Type taskType, IContainer container)
         {
             throw new NotImplementedException();
+        }
+
+        public IContainer[] Containers
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public void Run()
